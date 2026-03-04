@@ -1,0 +1,407 @@
+/* =========================================================
+   MAGAZIN POS - O‘ZBEK TILIDA DB (MySQL)
+   ========================================================= */
+
+SET NAMES utf8mb4;
+SET time_zone = "+00:00";
+SET foreign_key_checks = 0;
+
+DROP DATABASE IF EXISTS pos_magazin_uz;
+CREATE DATABASE pos_magazin_uz
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE pos_magazin_uz;
+
+SET foreign_key_checks = 1;
+
+/* =========================
+   1) ROLLAR
+   ========================= */
+CREATE TABLE rollar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomi VARCHAR(50) NOT NULL,
+  izoh VARCHAR(255) NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_rollar_nomi (nomi)
+) ENGINE=InnoDB;
+
+/* =========================
+   2) FOYDALANUVCHILAR
+   ========================= */
+CREATE TABLE foydalanuvchilar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  rol_id BIGINT UNSIGNED NOT NULL,
+  fio VARCHAR(120) NOT NULL,
+  email VARCHAR(120) NULL,
+  telefon VARCHAR(30) NULL,
+  login VARCHAR(60) NOT NULL,
+  parol_hash VARCHAR(255) NOT NULL,
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  oxirgi_kirish_vaqt TIMESTAMP NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ochirilgan_vaqt TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_foydalanuvchilar_login (login),
+  UNIQUE KEY uq_foydalanuvchilar_email (email),
+  KEY idx_foydalanuvchilar_rol (rol_id),
+  CONSTRAINT fk_foydalanuvchilar_rol
+    FOREIGN KEY (rol_id) REFERENCES rollar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   3) SOZLAMALAR (ixtiyoriy)
+   ========================= */
+CREATE TABLE sozlamalar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kalit_soz VARCHAR(100) NOT NULL,
+  qiymat TEXT NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sozlamalar_kalit (kalit_soz)
+) ENGINE=InnoDB;
+
+/* =========================
+   4) KATEGORIYALAR
+   ========================= */
+CREATE TABLE kategoriyalar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomi VARCHAR(120) NOT NULL,
+  izoh VARCHAR(255) NULL,
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  tartib INT NOT NULL DEFAULT 0,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ochirilgan_vaqt TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_kategoriyalar_nomi (nomi),
+  KEY idx_kategoriyalar_faol (faol)
+) ENGINE=InnoDB;
+
+/* =========================
+   5) SUBKATEGORIYALAR
+   ========================= */
+CREATE TABLE subkategoriyalar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kategoriya_id BIGINT UNSIGNED NOT NULL,
+  nomi VARCHAR(120) NOT NULL,
+  izoh VARCHAR(255) NULL,
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  tartib INT NOT NULL DEFAULT 0,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ochirilgan_vaqt TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_subkat_kat_nomi (kategoriya_id, nomi),
+  KEY idx_subkat_kategoriya (kategoriya_id),
+  CONSTRAINT fk_subkategoriyalar_kategoriya
+    FOREIGN KEY (kategoriya_id) REFERENCES kategoriyalar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   6) MAHSULOTLAR
+   ========================= */
+CREATE TABLE mahsulotlar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kategoriya_id BIGINT UNSIGNED NOT NULL,
+  subkategoriya_id BIGINT UNSIGNED NULL,
+  nomi VARCHAR(160) NOT NULL,
+  shtrix_kod VARCHAR(80) NOT NULL,
+  birlik VARCHAR(30) NOT NULL DEFAULT 'dona',
+  kelish_narxi DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  sotish_narxi DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  miqdor INT NOT NULL DEFAULT 0,              -- tezkor ko‘rsatish uchun
+  minimal_miqdor INT NOT NULL DEFAULT 0,      -- low-stock
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ochirilgan_vaqt TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_mahsulotlar_shtrix (shtrix_kod),
+  KEY idx_mahsulotlar_kategoriya (kategoriya_id),
+  KEY idx_mahsulotlar_subkategoriya (subkategoriya_id),
+  KEY idx_mahsulotlar_lowstock (miqdor, minimal_miqdor),
+  CONSTRAINT fk_mahsulotlar_kategoriya
+    FOREIGN KEY (kategoriya_id) REFERENCES kategoriyalar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_mahsulotlar_subkategoriya
+    FOREIGN KEY (subkategoriya_id) REFERENCES subkategoriyalar(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+/* =========================
+   7) MIJOZLAR (nasiya uchun)
+   ========================= */
+CREATE TABLE mijozlar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  fio VARCHAR(160) NOT NULL,
+  telefon VARCHAR(30) NULL,
+  manzil VARCHAR(255) NULL,
+  izoh VARCHAR(255) NULL,
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_mijozlar_telefon (telefon),
+  KEY idx_mijozlar_faol (faol)
+) ENGINE=InnoDB;
+
+/* =========================
+   8) YETKAZIB_BERUVCHILAR
+   ========================= */
+CREATE TABLE yetkazib_beruvchilar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomi VARCHAR(180) NOT NULL,
+  telefon VARCHAR(30) NULL,
+  manzil VARCHAR(255) NULL,
+  izoh VARCHAR(255) NULL,
+  faol TINYINT(1) NOT NULL DEFAULT 1,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_yetkazib_telefon (telefon),
+  KEY idx_yetkazib_faol (faol)
+) ENGINE=InnoDB;
+
+/* =========================
+   9) KASSA_SMENALARI
+   ========================= */
+CREATE TABLE kassa_smenalari (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kassir_id BIGINT UNSIGNED NOT NULL,
+  ochilgan_vaqt DATETIME NOT NULL,
+  yopilgan_vaqt DATETIME NULL,
+  ochilish_naqd DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  yopilish_naqd DECIMAL(12,2) NULL,
+  holat ENUM('OCHIQ','YOPIQ') NOT NULL DEFAULT 'OCHIQ',
+  izoh VARCHAR(255) NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_smena_kassir (kassir_id),
+  KEY idx_smena_holat (holat),
+  KEY idx_smena_ochilgan (ochilgan_vaqt),
+  CONSTRAINT fk_smena_kassir
+    FOREIGN KEY (kassir_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   10) SAVDOLAR (CHEKLAR)
+   ========================= */
+CREATE TABLE savdolar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  chek_raqami VARCHAR(50) NOT NULL,
+  kassir_id BIGINT UNSIGNED NOT NULL,
+  kassa_smena_id BIGINT UNSIGNED NULL,
+  mijoz_id BIGINT UNSIGNED NULL,
+  tolov_usuli ENUM('NAQD','KARTA','OTKAZMA','ARALASH') NOT NULL DEFAULT 'NAQD',
+  tolov_holati ENUM('TOLANGAN','QISMAN','NASIYA') NOT NULL DEFAULT 'TOLANGAN',
+  umumiy_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  chegirma_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  yakuniy_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,  -- chegirmadan keyin
+  tolangan_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  qarz_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  holat ENUM('QORALAMA','YAKUNLANGAN','BEKOR') NOT NULL DEFAULT 'YAKUNLANGAN',
+  sotilgan_vaqt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  izoh VARCHAR(255) NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_savdolar_chek (chek_raqami),
+  KEY idx_savdolar_kassir (kassir_id),
+  KEY idx_savdolar_mijoz (mijoz_id),
+  KEY idx_savdolar_smena (kassa_smena_id),
+  KEY idx_savdolar_vaqt (sotilgan_vaqt),
+  KEY idx_savdolar_tolov_holati (tolov_holati),
+  CONSTRAINT fk_savdolar_kassir
+    FOREIGN KEY (kassir_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_savdolar_mijoz
+    FOREIGN KEY (mijoz_id) REFERENCES mijozlar(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_savdolar_smena
+    FOREIGN KEY (kassa_smena_id) REFERENCES kassa_smenalari(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+/* =========================
+   11) SAVDO_TARKIBI
+   ========================= */
+CREATE TABLE savdo_tarkibi (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  savdo_id BIGINT UNSIGNED NOT NULL,
+  mahsulot_id BIGINT UNSIGNED NOT NULL,
+  soni INT NOT NULL,
+  birlik_narx DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  chegirma DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  qator_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_savdo_tarkibi_savdo (savdo_id),
+  KEY idx_savdo_tarkibi_mahsulot (mahsulot_id),
+  CONSTRAINT fk_savdo_tarkibi_savdo
+    FOREIGN KEY (savdo_id) REFERENCES savdolar(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_savdo_tarkibi_mahsulot
+    FOREIGN KEY (mahsulot_id) REFERENCES mahsulotlar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   12) KIRIMLAR (OMBORGA TUSHUM)
+   ========================= */
+CREATE TABLE kirimlar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  hisob_faktura VARCHAR(60) NULL,
+  yetkazib_beruvchi_id BIGINT UNSIGNED NOT NULL,
+  kiritgan_id BIGINT UNSIGNED NOT NULL,
+  umumiy_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  holat ENUM('QORALAMA','QABUL_QILINDI','BEKOR') NOT NULL DEFAULT 'QABUL_QILINDI',
+  kirim_vaqt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  izoh VARCHAR(255) NULL,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  yangilangan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_kirimlar_yetkazib (yetkazib_beruvchi_id),
+  KEY idx_kirimlar_kiritgan (kiritgan_id),
+  KEY idx_kirimlar_vaqt (kirim_vaqt),
+  CONSTRAINT fk_kirimlar_yetkazib
+    FOREIGN KEY (yetkazib_beruvchi_id) REFERENCES yetkazib_beruvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_kirimlar_kiritgan
+    FOREIGN KEY (kiritgan_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   13) KIRIM_TARKIBI
+   ========================= */
+CREATE TABLE kirim_tarkibi (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kirim_id BIGINT UNSIGNED NOT NULL,
+  mahsulot_id BIGINT UNSIGNED NOT NULL,
+  soni INT NOT NULL,
+  birlik_kelish_narxi DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  qator_summa DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  yaratilgan_vaqt TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_kirim_tarkibi_kirim (kirim_id),
+  KEY idx_kirim_tarkibi_mahsulot (mahsulot_id),
+  CONSTRAINT fk_kirim_tarkibi_kirim
+    FOREIGN KEY (kirim_id) REFERENCES kirimlar(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_kirim_tarkibi_mahsulot
+    FOREIGN KEY (mahsulot_id) REFERENCES mahsulotlar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   14) OMBOR_JURNALI (LEDGER)
+   ========================= */
+CREATE TABLE ombor_jurnali (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  mahsulot_id BIGINT UNSIGNED NOT NULL,
+  amal ENUM('KIRIM','CHIQIM','SOZLASH') NOT NULL,
+  miqdor_ozgarish INT NOT NULL,         -- + yoki -
+  eski_miqdor INT NOT NULL,
+  yangi_miqdor INT NOT NULL,
+  manba_turi ENUM('SAVDO','KIRIM','SOZLASH','QAYTARISH','BOSHQA') NOT NULL DEFAULT 'BOSHQA',
+  manba_id BIGINT UNSIGNED NULL,        -- polimorfik id
+  foydalanuvchi_id BIGINT UNSIGNED NOT NULL,
+  izoh VARCHAR(255) NULL,
+  yaratilgan_vaqt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_ombor_mahsulot (mahsulot_id),
+  KEY idx_ombor_vaqt (yaratilgan_vaqt),
+  KEY idx_ombor_manba (manba_turi, manba_id),
+  KEY idx_ombor_foydalanuvchi (foydalanuvchi_id),
+  CONSTRAINT fk_ombor_mahsulot
+    FOREIGN KEY (mahsulot_id) REFERENCES mahsulotlar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_ombor_foydalanuvchi
+    FOREIGN KEY (foydalanuvchi_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   15) KASSA_HARAKATLARI (qo‘lda)
+   ========================= */
+CREATE TABLE kassa_harakatlari (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  kassa_smena_id BIGINT UNSIGNED NOT NULL,
+  amal ENUM('KIRIM','CHIQIM') NOT NULL,
+  summa DECIMAL(12,2) NOT NULL,
+  sabab VARCHAR(180) NOT NULL,
+  kiritgan_id BIGINT UNSIGNED NOT NULL,
+  yaratilgan_vaqt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_kassa_harakatlari_smena (kassa_smena_id),
+  KEY idx_kassa_harakatlari_kiritgan (kiritgan_id),
+  KEY idx_kassa_harakatlari_vaqt (yaratilgan_vaqt),
+  CONSTRAINT fk_kassa_harakatlari_smena
+    FOREIGN KEY (kassa_smena_id) REFERENCES kassa_smenalari(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_kassa_harakatlari_kiritgan
+    FOREIGN KEY (kiritgan_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   16) TO‘LOVLAR (Nasiya/Qarz)
+   ========================= */
+CREATE TABLE tolovlar (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  savdo_id BIGINT UNSIGNED NOT NULL,
+  mijoz_id BIGINT UNSIGNED NULL,
+  kassa_smena_id BIGINT UNSIGNED NULL,
+  usul ENUM('NAQD','KARTA','OTKAZMA','ARALASH') NOT NULL DEFAULT 'NAQD',
+  summa DECIMAL(12,2) NOT NULL,
+  izoh VARCHAR(255) NULL,
+  qabul_qilgan_id BIGINT UNSIGNED NOT NULL,
+  tolangan_vaqt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_tolovlar_savdo (savdo_id),
+  KEY idx_tolovlar_mijoz (mijoz_id),
+  KEY idx_tolovlar_smena (kassa_smena_id),
+  KEY idx_tolovlar_vaqt (tolangan_vaqt),
+  CONSTRAINT fk_tolovlar_savdo
+    FOREIGN KEY (savdo_id) REFERENCES savdolar(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_tolovlar_mijoz
+    FOREIGN KEY (mijoz_id) REFERENCES mijozlar(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_tolovlar_smena
+    FOREIGN KEY (kassa_smena_id) REFERENCES kassa_smenalari(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_tolovlar_qabul_qilgan
+    FOREIGN KEY (qabul_qilgan_id) REFERENCES foydalanuvchilar(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+/* =========================
+   17) BOSHLANG‘ICH MA’LUMOT
+   ========================= */
+INSERT INTO rollar (nomi, izoh) VALUES
+('Admin', 'Tizim administratori'),
+('Kassir', 'Savdo (POS) foydalanuvchisi'),
+('Omborchi', 'Kirim/ombor uchun foydalanuvchi');
+
+-- Admin (parol_hash ni keyin PHP password_hash() bilan almashtiring)
+INSERT INTO foydalanuvchilar (rol_id, fio, email, telefon, login, parol_hash, faol)
+VALUES (1, 'Administrator', NULL, NULL, 'admin', '$2y$10$CHANGE_ME_HASH', 1);
+
+SET foreign_key_checks = 1;
+
+
+✅ Savdo hisobotlari (kunlik/oylik, kassir bo‘yicha, top mahsulot, foyda)
+
+✅ Kassa hisobotlari (smena bo‘yicha kirim/chiqim, naqd qoldiq)
+
+✅ Nasiya/qarz (mijoz bo‘yicha qarz qoldig‘i, to‘lovlar tarixi)

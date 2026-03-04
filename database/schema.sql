@@ -1,0 +1,2 @@
+-- schema.sql (placeholder)
+-- Put initial database schema here.
