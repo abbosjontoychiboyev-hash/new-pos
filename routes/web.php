@@ -32,6 +32,7 @@ return [
         'customers/create' => ['CustomerController', 'create'],
         'customers/edit/{id}' => ['CustomerController', 'edit'],
         'customers/debt/{id}' => ['CustomerController', 'debt'],
+
         // POS (Savdo)
         'pos' => ['PosController', 'index'],
         'pos/receipt/{id}' => ['PosController', 'receipt'],
@@ -40,10 +41,13 @@ return [
         
         // Reports
         'reports' => ['ReportController', 'index'],
-        'reports/sales' => ['ReportController', 'sales'],
+        'reports/daily' => ['ReportController', 'daily'],
+        'reports/monthly' => ['ReportController', 'monthly'],
         'reports/profit' => ['ReportController', 'profit'],
-        'reports/debt' => ['ReportController', 'debt'],
-        'reports/inventory' => ['ReportController', 'inventory'],
+        'reports/top-products' => ['ReportController', 'topProducts'],
+        'reports/cashiers' => ['ReportController', 'cashiers'],
+        'reports/debtors' => ['ReportController', 'debtors'],
+        'reports/categories' => ['ReportController', 'categories'],
         
         // Settings
         'settings' => ['SettingController', 'index'],
@@ -61,6 +65,15 @@ return [
         'debt' => ['DebtController', 'index'],
         'debt/customer/{id}' => ['DebtController', 'customer'],
         'debt/payment/{id}' => ['DebtController', 'payment'],
+        // Settings
+        'settings' => ['SettingController', 'index'],
+        'settings/company' => ['SettingController', 'company'],
+        'settings/currency' => ['SettingController', 'currency'],
+        'settings/pos' => ['SettingController', 'pos'],
+        'settings/users' => ['SettingController', 'users'],
+        'settings/users/create' => ['SettingController', 'userCreate'],
+        'settings/users/edit/{id}' => ['SettingController', 'userEdit'],
+        'settings/profile' => ['SettingController', 'profile'],
     ],
     
     'POST' => [
@@ -97,12 +110,24 @@ return [
         'pos/open-shift' => ['PosController', 'openShift'],
         'pos/close-shift' => ['PosController', 'closeShift'],
         
+        // Reports export
+        'reports/export-excel/{type}' => ['ReportController', 'exportExcel'],
+        'reports/export-pdf/{type}' => ['ReportController', 'exportPdf'],
         
         // Settings
         'settings/update' => ['SettingController', 'update'],
         'settings/users/store' => ['UserController', 'store'],
         'settings/users/update/{id}' => ['UserController', 'update'],
         'settings/users/delete/{id}' => ['UserController', 'delete'],
+        // Settings
+        'settings/company/save' => ['SettingController', 'saveCompany'],
+        'settings/currency/save' => ['SettingController', 'saveCurrency'],
+        'settings/pos/save' => ['SettingController', 'savePos'],
+        'settings/users/store' => ['SettingController', 'userStore'],
+        'settings/users/update/{id}' => ['SettingController', 'userUpdate'],
+        'settings/users/delete/{id}' => ['SettingController', 'userDelete'],
+        'settings/profile/update' => ['SettingController', 'profileUpdate'],
+        
         // nasiya debt
         'debt/payment/store' => ['DebtController', 'storePayment'],
         'debt/pay-full/{id}' => ['DebtController', 'payFull'],

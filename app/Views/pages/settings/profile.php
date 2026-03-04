@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mening profilim - POS System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Same styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; }
+        .wrapper { display: flex; }
+        
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            position: fixed;
+        }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h3 { font-size: 24px; font-weight: 700; }
+        .nav-menu { padding: 20px 0; list-style: none; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: white;
+        }
+        .nav-link i { width: 25px; margin-right: 10px; }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+        
+        .profile-avatar i {
+            font-size: 50px;
+            color: #667eea;
+        }
+        
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .profile-role {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .profile-body {
+            padding: 30px;
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-label {
+            width: 150px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        
+        .tab-pane {
+            padding: 20px 0;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .strength-weak { background: #dc3545; width: 33%; }
+        .strength-medium { background: #ffc107; width: 66%; }
+        .strength-strong { background: #28a745; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>POS Magazin</h3>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/new-pos/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/new-pos/pos" class="nav-link"><i class="fas fa-shopping-cart"></i> POS</a></li>
+                <li class="nav-item"><a href="/new-pos/products" class="nav-link"><i class="fas fa-box"></i> Mahsulotlar</a></li>
+                <li class="nav-item"><a href="/new-pos/categories" class="nav-link"><i class="fas fa-tags"></i> Kategoriyalar</a></li>
+                <li class="nav-item"><a href="/new-pos/customers" class="nav-link"><i class="fas fa-users"></i> Mijozlar</a></li>
+                <li class="nav-item"><a href="/new-pos/debt" class="nav-link"><i class="fas fa-credit-card"></i> Qarzdorlar</a></li>
+                <li class="nav-item"><a href="/new-pos/reports" class="nav-link"><i class="fas fa-chart-bar"></i> Hisobotlar</a></li>
+                <li class="nav-item"><a href="/new-pos/settings" class="nav-link active"><i class="fas fa-cog"></i> Sozlamalar</a></li>
+                <li class="nav-item"><a href="/new-pos/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Chiqish</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h4>Mening profilim</h4>
+                <div class="user-info">
+                    <span><?= $_SESSION['user']['fio'] ?? 'Foydalanuvchi' ?></span>
+                </div>
+            </div>
+            
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-name"><?= htmlspecialchars($user['fio']) ?></div>
+                    <div class="profile-role"><?= htmlspecialchars($user['rol_nomi'] ?? 'Foydalanuvchi') ?></div>
+                </div>
+                
+                <div class="profile-body">
+                                       <?php if (isset($_SESSION['flash']['success'])): ?>
+                        <div class="alert alert-success"><?= $_SESSION['flash']['success'] ?></div>
+                        <?php unset($_SESSION['flash']['success']); ?>
+                    <?php endif; ?>
+                    
+                    <?php if (isset($_SESSION['flash']['error'])): ?>
+                        <div class="alert alert-danger"><?= $_SESSION['flash']['error'] ?></div>
+                        <?php unset($_SESSION['flash']['error']); ?>
+                    <?php endif; ?>
+                    
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                                <i class="fas fa-info-circle"></i> Shaxsiy ma'lumotlar
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">
+                                <i class="fas fa-key"></i> Parolni o'zgartirish
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                                <i class="fas fa-history"></i> Faollik tarixi
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="profileTabsContent">
+                        <!-- Shaxsiy ma'lumotlar -->
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            <form method="POST" action="/new-pos/settings/profile/update">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">F.I.O.</label>
+                                        <input type="text" name="fio" class="form-control" 
+                                               value="<?= htmlspecialchars($user['fio']) ?>" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Login</label>
+                                        <input type="text" class="form-control" value="<?= htmlspecialchars($user['login']) ?>" readonly disabled>
+                                        <small class="text-muted">Login o'zgartirib bo'lmaydi</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" name="email" class="form-control" 
+                                               value="<?= htmlspecialchars($user['email'] ?? '') ?>">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Telefon</label>
+                                        <input type="text" name="telefon" class="form-control" 
+                                               value="<?= htmlspecialchars($user['telefon'] ?? '') ?>">
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-save">
+                                            <i class="fas fa-save"></i> Ma'lumotlarni saqlash
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Parolni o'zgartirish -->
+                        <div class="tab-pane fade" id="password" role="tabpanel">
+                            <form method="POST" action="/new-pos/settings/profile/update" id="passwordForm">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Joriy parol</label>
+                                        <input type="password" name="current_password" class="form-control" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Yangi parol</label>
+                                        <input type="password" name="new_password" class="form-control" id="new_password" required>
+                                        <div class="password-strength" id="passwordStrength"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Yangi parol (takror)</label>
+                                        <input type="password" name="confirm_password" class="form-control" id="confirm_password" required>
+                                        <small class="text-muted" id="passwordMatch"></small>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-save">
+                                            <i class="fas fa-key"></i> Parolni yangilash
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Faollik tarixi -->
+                        <div class="tab-pane fade" id="activity" role="tabpanel">
+                            <div class="mt-4">
+                                <div class="info-row">
+                                    <div class="info-label">Oxirgi kirish:</div>
+                                    <div class="info-value">
+                                        <?= $user['oxirgi_kirish_vaqt'] ? date('d.m.Y H:i:s', strtotime($user['oxirgi_kirish_vaqt'])) : 'Hali kirmagan' ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Profil yaratilgan:</div>
+                                    <div class="info-value">
+                                        <?= date('d.m.Y H:i:s', strtotime($user['yaratilgan_vaqt'])) ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Oxirgi yangilanish:</div>
+                                    <div class="info-value">
+                                        <?= date('d.m.Y H:i:s', strtotime($user['yangilangan_vaqt'])) ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">Roli:</div>
+                                    <div class="info-value">
+                                        <span class="badge bg-info"><?= htmlspecialchars($user['rol_nomi'] ?? 'Foydalanuvchi') ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Password strength checker
+        document.getElementById('new_password')?.addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrength');
+            
+            if (!strengthBar) return;
+            
+            let strength = 0;
+            
+            if (password.length >= 6) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            
+            strengthBar.className = 'password-strength';
+            
+            if (password.length === 0) {
+                strengthBar.style.width = '0';
+            } else if (strength < 2) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength < 4) {
+                strengthBar.classList.add('strength-medium');
+            } else {
+                strengthBar.classList.add('strength-strong');
+            }
+        });
+        
+        // Password match checker
+        document.getElementById('confirm_password')?.addEventListener('input', function() {
+            const password = document.getElementById('new_password').value;
+            const confirm = this.value;
+            const matchMsg = document.getElementById('passwordMatch');
+            
+            if (password === confirm) {
+                matchMsg.innerHTML = '<span class="text-success">Parollar mos</span>';
+            } else {
+                matchMsg.innerHTML = '<span class="text-danger">Parollar mos emas</span>';
+            }
+        });
+        
+        // Form validation
+        document.getElementById('passwordForm')?.addEventListener('submit', function(e) {
+            const password = document.getElementById('new_password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Yangi parollar mos kelmadi!');
+            }
+        });
+    </script>
+</body>
+</html>
