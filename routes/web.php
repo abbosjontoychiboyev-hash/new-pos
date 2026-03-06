@@ -74,6 +74,11 @@ return [
         'settings/users/create' => ['SettingController', 'userCreate'],
         'settings/users/edit/{id}' => ['SettingController', 'userEdit'],
         'settings/profile' => ['SettingController', 'profile'],
+
+        // Returns
+        'returns' => ['ReturnController', 'index'],
+        'returns/search' => ['ReturnController', 'search'],
+        'returns/history' => ['ReturnController', 'history'],
     ],
     
     'POST' => [
@@ -131,6 +136,9 @@ return [
         // nasiya debt
         'debt/payment/store' => ['DebtController', 'storePayment'],
         'debt/pay-full/{id}' => ['DebtController', 'payFull'],
+
+        //Returns
+        'returns/process' => ['ReturnController', 'process'],
     ],
     
     'AJAX' => [

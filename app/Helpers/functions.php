@@ -84,4 +84,17 @@ if (!function_exists('time_elapsed_string')) {
     }
 }
 
-// Qolgan helper funksiyalar...
+    /**
+     * Active menu aniqlash
+     */
+    if (!function_exists('isActive')) {
+        function isActive($page) {
+            $uri = $_SERVER['REQUEST_URI'];
+            
+            if (strpos($uri, $page) !== false) {
+                return 'active';
+            }
+            
+            return '';
+        }
+    }

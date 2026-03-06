@@ -1,6 +1,4 @@
 <?php
-// app/Controllers/Controller.php
-
 namespace App\Controllers;
 
 abstract class Controller {
@@ -10,19 +8,73 @@ abstract class Controller {
         $this->db = \Database::getInstance();
     }
     
+    /**
+     * Viewni layout bilan chiqarish
+     */
     protected function view($view, $data = []) {
         // View faylining to'liq yo'li
         $viewPath = APP_PATH . '/Views/pages/' . $view . '.php';
-        
-        // Extract data ni o'zgaruvchilarga aylantirish
-        extract($data);
         
         if (!file_exists($viewPath)) {
             die("View topilmadi: " . $viewPath);
         }
         
-        // View ni yuklash
-        require_once $viewPath;
+        // View content ni olish
+        ob_start();
+        extract($data);
+        require $viewPath;
+        $content = ob_get_clean();
+        
+        // Layout uchun title
+        $title = $data['title'] ?? $this->getTitleFromView($view);
+        
+        // Layout ni chiqarish
+        require APP_PATH . '/Views/layouts/main.php';
+    }
+    
+    /**
+     * View nomidan title yaratish
+     */
+    private function getTitleFromView($view) {
+        $parts = explode('/', $view);
+        $last = end($parts);
+        
+        $titles = [
+            'dashboard' => 'Dashboard',
+            'products/index' => 'Mahsulotlar',
+            'products/create' => 'Yangi mahsulot',
+            'products/edit' => 'Mahsulotni tahrirlash',
+            'categories/index' => 'Kategoriyalar',
+            'categories/create' => 'Yangi kategoriya',
+            'categories/edit' => 'Kategoriyani tahrirlash',
+            'subcategories/index' => 'Subkategoriyalar',
+            'subcategories/create' => 'Yangi subkategoriya',
+            'subcategories/edit' => 'Subkategoriyani tahrirlash',
+            'customers/index' => 'Mijozlar',
+            'customers/create' => 'Yangi mijoz',
+            'customers/edit' => 'Mijozni tahrirlash',
+            'debt/index' => 'Qarzdorlar',
+            'debt/customer' => 'Mijoz qarzi',
+            'debt/payment' => 'To\'lov qabul qilish',
+            'returns/index' => 'Mahsulot qaytarish',
+            'returns/details' => 'Qaytarish detallari',
+            'returns/history' => 'Qaytarish tarixi',
+            'reports/index' => 'Hisobotlar',
+            'reports/monthly' => 'Oylik hisobot',
+            'reports/profit' => 'Foyda hisoboti',
+            'pos/index' => 'POS - Savdo',
+            'pos/receipt' => 'Chek',
+            'settings/index' => 'Sozlamalar',
+            'settings/company' => 'Kompaniya sozlamalari',
+            'settings/currency' => 'Valyuta sozlamalari',
+            'settings/pos' => 'POS sozlamalari',
+            'settings/users' => 'Foydalanuvchilar',
+            'settings/user_create' => 'Yangi foydalanuvchi',
+            'settings/user_edit' => 'Foydalanuvchini tahrirlash',
+            'settings/profile' => 'Mening profilim',
+        ];
+        
+        return $titles[$view] ?? ucfirst(str_replace('/', ' ', $view));
     }
     
     protected function json($data, $statusCode = 200) {
@@ -33,11 +85,10 @@ abstract class Controller {
     }
     
     protected function redirect($url) {
-        // URL boshida / borligiga tekshirish
         if (strpos($url, 'http') === 0) {
             header("Location: $url");
         } else {
-            header("Location: /" . ltrim($url, '/'));
+            header("Location: /new-pos/" . ltrim($url, '/'));
         }
         exit;
     }
@@ -66,6 +117,10 @@ abstract class Controller {
                 if (strlen($value) > $matches[1]) {
                     $errors[$field][] = "$field maydoni ko'pi bilan {$matches[1]} belgi bo'lishi kerak";
                 }
+            }
+            
+            if (preg_match('/numeric/', $rule) && !is_numeric($value)) {
+                $errors[$field][] = "$field maydoni raqam bo'lishi kerak";
             }
         }
         

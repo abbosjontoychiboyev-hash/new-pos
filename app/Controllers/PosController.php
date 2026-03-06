@@ -309,6 +309,7 @@ class PosController extends Controller {
             }
         }
         
+
         // Chek raqamini yaratish
         try {
             $chekRaqami = $this->posModel->generateChekRaqami();
@@ -383,6 +384,15 @@ class PosController extends Controller {
                 }
             }
         }
+
+        // Savdo muvaffaqiyatli amalga oshgandan keyin
+        $_SESSION['flash']['success'] = 'Savdo muvaffaqiyatli amalga oshirildi. Chek raqami: ' . $saleData['chek_raqami'];
+
+        // Avtomatik print uchun sessionga yozish
+        $_SESSION['auto_print'] = true;
+
+        // Chek sahifasiga o'tish
+        $this->redirect('pos/receipt/' . $savdoId);
         
         // Natijani tekshirish
         if ($savdoId) {
