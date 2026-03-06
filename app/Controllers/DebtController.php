@@ -13,8 +13,8 @@ class DebtController extends Controller {
     
     public function __construct() {
         parent::__construct();
-        $this->debtModel = new Debt();
         $this->customerModel = new Customer();
+        $this->debtModel = new \App\Models\Debt();
     }
     
     /**
@@ -132,7 +132,12 @@ class DebtController extends Controller {
         ];
         
         try {
-            $this->debtModel->addPayment($data, $_SESSION['user_id']);
+            // **MUHIM: $this->debtModel mavjudligiga ishonch hosil qiling**
+            if (!$this->debtModel) {
+                throw new Exception("debtModel yuklanmagan!");
+            }
+            
+            $result = $this->debtModel->addPayment($data, $_SESSION['user_id']);
             
             if ($summa == $qolganQarz) {
                 $_SESSION['flash']['success'] = 'To\'lov qabul qilindi. Qarz to\'liq yopildi.';

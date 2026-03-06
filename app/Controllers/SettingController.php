@@ -216,7 +216,9 @@ class SettingController extends Controller {
             $this->redirect('dashboard');
         }
         
-        $users = $this->userModel->getActive();
+        // $users = $this->userModel->getActive(); // ESLI KOD - FAQAT FAOL
+        $users = $this->userModel->all(); // YANGI KOD - BARCHA FOYDALANUVCHILAR
+        
         $roles = $this->roleModel->getAllWithCount();
         
         $this->view('settings/users', [

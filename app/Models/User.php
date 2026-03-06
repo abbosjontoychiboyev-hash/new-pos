@@ -40,7 +40,42 @@ class User extends Model {
         $stmt->execute([$roleName]);
         return $stmt->fetchAll();
     }
-    
+    /**
+     * Barcha foydalanuvchilarni olish (soft delete hisobga olingan holda)
+     */
+    public function all($orderBy = 'fio', $direction = 'ASC') {
+        // Soft delete ustuni borligini tekshirish
+        try {
+            $stmt = $this->db->prepare("SHOW COLUMNS FROM {$this->table} LIKE 'ochirilgan_vaqt'");
+            $stmt->execute();
+            $hasSoftDelete = $stmt->fetch() ? true : false;
+            
+            if ($hasSoftDelete) {
+                $sql = "SELECT u.*, r.nomi as rol_nomi 
+                        FROM {$this->table} u
+                        LEFT JOIN rollar r ON u.rol_id = r.id
+                        WHERE u.ochirilgan_vaqt IS NULL
+                        ORDER BY u.{$orderBy} {$direction}";
+            } else {
+                $sql = "SELECT u.*, r.nomi as rol_nomi 
+                        FROM {$this->table} u
+                        LEFT JOIN rollar r ON u.rol_id = r.id
+                        ORDER BY u.{$orderBy} {$direction}";
+            }
+            
+            $stmt = $this->db->query($sql);
+            return $stmt->fetchAll();
+            
+        } catch (\PDOException $e) {
+            // Xatolik bo'lsa, oddiy so'rov
+            $sql = "SELECT u.*, r.nomi as rol_nomi 
+                    FROM {$this->table} u
+                    LEFT JOIN rollar r ON u.rol_id = r.id
+                    ORDER BY u.{$orderBy} {$direction}";
+            $stmt = $this->db->query($sql);
+            return $stmt->fetchAll();
+        }
+    }
     /**
      * Faol foydalanuvchilar
      */

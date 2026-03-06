@@ -74,7 +74,7 @@ class Debt extends Model {
         $this->db->beginTransaction();
         
         try {
-            // To'lovni saqlash
+            // 1. To'lovni tolovlar jadvaliga yozish
             $stmt = $this->db->prepare("
                 INSERT INTO tolovlar (
                     savdo_id, mijoz_id, usul, summa, izoh, qabul_qilgan_id, tolangan_vaqt
@@ -90,19 +90,35 @@ class Debt extends Model {
                 $userId
             ]);
             
-            // Savdo qarzini yangilash
+            // 2. Eski qarzni olish
+            $stmt = $this->db->prepare("SELECT qarz_summa FROM savdolar WHERE id = ?");
+            $stmt->execute([$data['savdo_id']]);
+            $eskiQarz = $stmt->fetch()['qarz_summa'];
+            
+            // 3. Yangi qarzni hisoblash
+            $yangiQarz = $eskiQarz - $data['summa'];
+            $yangiHolat = ($yangiQarz <= 0) ? 'TOLANGAN' : 'QISMAN';
+            
+            // 4. Manfiy bo'lib qolmasligi uchun tekshirish
+            if ($yangiQarz < 0) {
+                $yangiQarz = 0;
+            }
+            
+            // 5. Savdoni yangilash
             $stmt = $this->db->prepare("
                 UPDATE savdolar 
                 SET 
                     tolangan_summa = tolangan_summa + ?,
-                    qarz_summa = qarz_summa - ?,
-                    tolov_holati = CASE 
-                        WHEN qarz_summa - ? <= 0 THEN 'TOLANGAN'
-                        ELSE 'QISMAN'
-                    END
+                    qarz_summa = ?,
+                    tolov_holati = ?
                 WHERE id = ?
             ");
-            $stmt->execute([$data['summa'], $data['summa'], $data['summa'], $data['savdo_id']]);
+            $stmt->execute([
+                $data['summa'],
+                $yangiQarz,
+                $yangiHolat,
+                $data['savdo_id']
+            ]);
             
             $this->db->commit();
             return true;

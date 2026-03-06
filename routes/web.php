@@ -136,6 +136,7 @@ return [
         // nasiya debt
         'debt/payment/store' => ['DebtController', 'storePayment'],
         'debt/pay-full/{id}' => ['DebtController', 'payFull'],
+        
 
         //Returns
         'returns/process' => ['ReturnController', 'process'],
