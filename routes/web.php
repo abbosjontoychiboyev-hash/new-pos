@@ -82,6 +82,12 @@ return [
 
         //API 
         'api/sale-details/{id}' => ['ApiController', 'saleDetails'],
+
+        //Dillers
+        'yetkazib' => ['YetkazibBeruvchiController', 'index'],
+        'yetkazib/create' => ['YetkazibBeruvchiController', 'create'],
+        'yetkazib/edit/{id}' => ['YetkazibBeruvchiController', 'edit'],
+
     ],
     
     'POST' => [
@@ -143,6 +149,13 @@ return [
 
         //Returns
         'returns/process' => ['ReturnController', 'process'],
+
+        //Dillers
+        'yetkazib/store' => ['YetkazibBeruvchiController', 'store'],
+        'yetkazib/update/{id}' => ['YetkazibBeruvchiController', 'update'],
+        'yetkazib/delete/{id}' => ['YetkazibBeruvchiController', 'delete'],
+        'yetkazib/pay-debt/{id}' => ['YetkazibBeruvchiController', 'payDebt'],
+        
     ],
     
     'AJAX' => [

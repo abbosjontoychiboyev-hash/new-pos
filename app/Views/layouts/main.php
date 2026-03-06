@@ -211,6 +211,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="/new-pos/yetkazib" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'yetkazib') !== false ? 'active' : '' ?>">
+                        <i class="fas fa-truck"></i> <span>Dillerlar</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="/new-pos/debt" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'debt') !== false ? 'active' : '' ?>">
                         <i class="fas fa-credit-card"></i> <span>Qarzdorlar</span>
                     </a>
