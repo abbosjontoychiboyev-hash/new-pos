@@ -18,7 +18,12 @@ class Setting extends Model {
         
         return $result ? $result['qiymat'] : $default;
     }
-    
+    /**
+     * Kompaniya nomini olish
+     */
+    public function getCompanyName() {
+        return $this->get('company_name', 'POS Magazin');
+    }
     /**
      * Sozlamani o'rnatish
      */

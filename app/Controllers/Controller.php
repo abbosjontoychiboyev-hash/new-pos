@@ -4,8 +4,12 @@ namespace App\Controllers;
 abstract class Controller {
     protected $db;
     
+    protected $companyName = 'POS Magazin';
+
+    
     public function __construct() {
         $this->db = \Database::getInstance();
+        $this->loadCompanyName();
     }
     
     /**
@@ -131,5 +135,20 @@ abstract class Controller {
         }
         
         return true;
+    }
+    /**
+     * Kompaniya nomini yuklash
+     */
+    protected function loadCompanyName() {
+        try {
+            $stmt = $this->db->prepare("SELECT qiymat FROM sozlamalar WHERE kalit_soz = 'company_name'");
+            $stmt->execute();
+            $result = $stmt->fetch();
+            if ($result && !empty($result['qiymat'])) {
+                $this->companyName = $result['qiymat'];
+            }
+        } catch (\Exception $e) {
+            // Xatolik bo'lsa, default qiymat ishlatiladi
+        }
     }
 }

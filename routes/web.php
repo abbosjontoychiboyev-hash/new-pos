@@ -79,6 +79,9 @@ return [
         'returns' => ['ReturnController', 'index'],
         'returns/search' => ['ReturnController', 'search'],
         'returns/history' => ['ReturnController', 'history'],
+
+        //API 
+        'api/sale-details/{id}' => ['ApiController', 'saleDetails'],
     ],
     
     'POST' => [

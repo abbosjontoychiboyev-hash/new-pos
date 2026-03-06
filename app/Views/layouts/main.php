@@ -175,7 +175,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h3>POS Magazin</h3>
+                <h3><?= htmlspecialchars($companyName ?? 'POS Magazin') ?></h3>
                 <p>Savdo boshqaruvi</p>
             </div>
             

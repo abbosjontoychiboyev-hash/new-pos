@@ -227,12 +227,13 @@
                         <th>Kassir</th>
                         <th>Mijoz</th>
                         <th>Summa</th>
+                        <th>Mahsulotlar</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($recentSales)): ?>
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="6" class="text-center py-4">
                                 <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
                                 <br>Savdolar yo'q
                             </td>
@@ -245,6 +246,14 @@
                             <td><?= htmlspecialchars($sale['kassir_fio'] ?? '-') ?></td>
                             <td><?= htmlspecialchars($sale['mijoz_fio'] ?? 'Anonim') ?></td>
                             <td><strong><?= number_format($sale['yakuniy_summa'], 0, ',', ' ') ?> so'm</strong></td>
+                            <td>
+                                <button type="button" 
+                                        class="btn btn-sm btn-info" 
+                                        onclick="viewSaleDetails(<?= $sale['id'] ?>)"
+                                        title="Mahsulotlarni ko'rish">
+                                    <i class="fas fa-box"></i> Mahsulotlar
+                                </button>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -344,10 +353,34 @@
 </div>
 <?php endif; ?>
 
+<!-- Mahsulot detallari modal -->
+<div class="modal fade" id="saleDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt"></i> Savdo mahsulotlari
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="saleDetailsBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Yuklanmoqda...</span>
+                    </div>
+                    <p class="mt-2">Ma'lumotlar yuklanmoqda...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Extra CSS -->
 <?php ob_start(); ?>
 <style>
-    /* Statistics Cards */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -399,7 +432,6 @@
         color: rgba(0,0,0,0.05);
     }
     
-    /* Charts Row */
     .charts-row {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -432,7 +464,6 @@
         margin-right: 8px; 
     }
     
-    /* Tables Row */
     .tables-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -476,7 +507,6 @@
         color: #5a67d8;
     }
     
-    /* Alert */
     .alert-lowstock {
         background: #fff3cd;
         border: 1px solid #ffeeba;
@@ -499,6 +529,32 @@
         text-decoration: underline;
         margin-left: 10px;
     }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+    
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
+        .tables-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 <?php $extraCss = ob_get_clean(); ?>
 
@@ -506,7 +562,7 @@
 <?php ob_start(); ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Sales Chart
+    // Oxirgi 7 kunlik savdo grafigi
     const ctx1 = document.getElementById('salesChart').getContext('2d');
     const dailyStats = <?= json_encode($dailyStats ?? []) ?>;
     
@@ -565,7 +621,7 @@
         }
     });
     
-    // Category Chart
+    // Kategoriyalar grafigi
     const ctx2 = document.getElementById('categoryChart').getContext('2d');
     const categories = <?= json_encode($stats['topCategories'] ?? []) ?>;
     
@@ -609,5 +665,126 @@
             }
         }
     });
+    
+    // Savdo mahsulotlarini ko'rish
+    function viewSaleDetails(saleId) {
+        // Modalni ko'rsatish
+        var myModal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
+        myModal.show();
+        
+        // Yuklanish animatsiyasini ko'rsatish
+        document.getElementById('saleDetailsBody').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yuklanmoqda...</span>
+                </div>
+                <p class="mt-2">Ma'lumotlar yuklanmoqda...</p>
+            </div>
+        `;
+        
+        // AJAX so'rov yuborish
+        fetch('/new-pos/api/sale-details/' + saleId)
+            .then(response => response.json())
+            .then(data => {
+                let html = '';
+                
+                if (data.items && data.items.length > 0) {
+                    html = `
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Mahsulot</th>
+                                        <th>Shtrix kod</th>
+                                        <th>Soni</th>
+                                        <th>Narxi</th>
+                                        <th>Summa</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.items.forEach((item, index) => {
+                        html += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td><strong>${item.nomi}</strong></td>
+                                <td><code>${item.shtrix_kod || '-'}</code></td>
+                                <td>${item.soni} ${item.birlik || 'dona'}</td>
+                                <td>${formatMoney(item.birlik_narx)}</td>
+                                <td>${formatMoney(item.qator_summa)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="5" class="text-end">Jami:</th>
+                                        <th>${formatMoney(data.total)}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    `;
+                    
+                    // Chek ma'lumotlari
+                    html += `
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p><strong>Chek raqami:</strong> ${data.sale.chek_raqami}</p>
+                                <p><strong>Sana:</strong> ${new Date(data.sale.sotilgan_vaqt).toLocaleString('uz-UZ')}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Kassir:</strong> ${data.sale.kassir_fio || '-'}</p>
+                                <p><strong>Mijoz:</strong> ${data.sale.mijoz_fio || 'Anonim'}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html = '<div class="alert alert-warning">Bu savdoda mahsulotlar topilmadi</div>';
+                }
+                
+                document.getElementById('saleDetailsBody').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Xatolik:', error);
+                document.getElementById('saleDetailsBody').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Xatolik yuz berdi. Qaytadan urinib ko'ring.
+                    </div>
+                `;
+            });
+    }
+    
+    // Format money (agar mavjud bo'lmasa)
+    if (typeof formatMoney !== 'function') {
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('uz-UZ', { 
+                style: 'currency', 
+                currency: 'UZS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount).replace('UZS', '').trim() + ' so\'m';
+        }
+    }
+    
+    // Auto close alerts after 5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 5000);
 </script>
 <?php $extraJs = ob_get_clean(); ?>
+
+<?php 
+// Clear old data
+unset($_SESSION['old']);
+unset($_SESSION['errors']);
+?>

@@ -215,9 +215,7 @@
         <span class="total-debt"><?= number_format($debtInfo['jami_qarz'] ?? 0, 0, ',', ' ') ?> so'm</span>
         <small>Jami qarz</small>
     </div>
-    <a href="/new-pos/debt/payment/<?= $sale['id'] ?? '' ?>" class="btn btn-payment">
-        <i class="fas fa-money-bill-wave"></i> To'lov qabul qilish
-    </a>
+    
 </div>
 
 <!-- Statistics -->

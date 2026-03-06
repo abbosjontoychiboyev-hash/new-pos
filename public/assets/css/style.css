@@ -339,4 +339,11 @@ body {
     .user-details {
         display: none;
     }
+    .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    }
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
 }
