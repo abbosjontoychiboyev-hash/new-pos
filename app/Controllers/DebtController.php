@@ -67,8 +67,7 @@ class DebtController extends Controller {
     public function payment($savdoId) {
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('login');
-        }
-        
+        }       
         // Savdo ma'lumotlarini olish
         $stmt = $this->db->prepare("
             SELECT s.*, m.fio as mijoz_fio, m.telefon as mijoz_tel
@@ -91,11 +90,10 @@ class DebtController extends Controller {
      * To'lovni saqlash
      */
     public function storePayment() {
-        if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
-            $_SESSION['flash']['error'] = 'CSRF token xato';
-            $this->redirect('debt');
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect('login');
         }
-        
+            
         $rules = [
             'savdo_id' => 'required|numeric',
             'mijoz_id' => 'required|numeric',
@@ -158,11 +156,9 @@ class DebtController extends Controller {
      * Mijoz qarzini to'lash (to'liq)
      */
     public function payFull($savdoId) {
-        if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
-            $_SESSION['flash']['error'] = 'CSRF token xato';
-            $this->redirect('debt');
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect('login');
         }
-        
         $stmt = $this->db->prepare("
             SELECT s.*, m.fio 
             FROM savdolar s

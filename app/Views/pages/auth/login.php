@@ -261,15 +261,15 @@
                 </form>
                 
                 <div class="demo-info">
-                    <small>Demo ma'lumotlar</small>
+                    <small>AliMuhammadxon market</small>
                     <div class="badge">
-                        <i class="fas fa-user"></i> admin / 123456
+                        <i class="fas fa-user"></i> ADMIN 
                     </div>
                     <div class="badge" style="margin-left: 5px;">
-                        <i class="fas fa-user"></i> kassir / 123456
+                        <i class="fas fa-user"></i> Sotuvchi
                     </div>
                     <div class="badge" style="margin-left: 5px;">
-                        <i class="fas fa-user"></i> omborchi / 123456
+                        <i class="fas fa-user"></i> omborchi
                     </div>
                 </div>
             </div>

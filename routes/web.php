@@ -87,7 +87,16 @@ return [
         'yetkazib' => ['YetkazibBeruvchiController', 'index'],
         'yetkazib/create' => ['YetkazibBeruvchiController', 'create'],
         'yetkazib/edit/{id}' => ['YetkazibBeruvchiController', 'edit'],
+        'yetkazib/add-payment/{id}' => ['YetkazibBeruvchiController', 'addPayment'],
+        'yetkazib/show/{id}' => ['YetkazibBeruvchiController', 'show'],
+        'yetkazib/add-payment/{id}' => ['YetkazibBeruvchiController', 'addPayment'],
 
+        //Kirim 
+        'kirim' => ['KirimController', 'index'],
+        'kirim/create' => ['KirimController', 'create'],
+        'kirim/show/{id}' => ['KirimController', 'show'],  // view -> show
+        'kirim/edit/{id}' => ['KirimController', 'edit'],
+            
     ],
     
     'POST' => [
@@ -154,7 +163,23 @@ return [
         'yetkazib/store' => ['YetkazibBeruvchiController', 'store'],
         'yetkazib/update/{id}' => ['YetkazibBeruvchiController', 'update'],
         'yetkazib/delete/{id}' => ['YetkazibBeruvchiController', 'delete'],
-        'yetkazib/pay-debt/{id}' => ['YetkazibBeruvchiController', 'payDebt'],
+        'yetkazib/store-payment' => ['YetkazibBeruvchiController', 'storePayment'],
+        
+         // Slot operatsiyalari
+        'pos/create-slot'           => ['PosController', 'createSlot'],
+        'pos/hold-slot'             => ['PosController', 'holdSlot'],
+        'pos/activate-slot'         => ['PosController', 'activateSlot'],
+        'pos/update-slot'           => ['PosController', 'updateSlot'],
+        'pos/add-to-slot'           => ['PosController', 'addToSlot'],
+        'pos/remove-from-slot'      => ['PosController', 'removeFromSlot'],
+        'pos/update-slot-quantity'  => ['PosController', 'updateSlotQuantity'],
+        'pos/checkout-slot'         => ['PosController', 'checkoutSlot'],
+
+        //Kirim
+        'kirim/store' => ['KirimController', 'store'],
+        'kirim/update/{id}' => ['KirimController', 'update'],
+        'kirim/delete/{id}' => ['KirimController', 'delete'],
+
         
     ],
     

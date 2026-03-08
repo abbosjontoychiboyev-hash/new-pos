@@ -180,63 +180,102 @@
             </div>
             
             <ul class="nav-menu">
+                <?php if ($_SESSION['user']['rol_nomi'] == 'Admin'): ?>
+                <!-- Dashboard faqat admin -->
                 <li class="nav-item">
                     <a href="/new-pos/dashboard" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'dashboard') !== false ? 'active' : '' ?>">
                         <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                     </a>
                 </li>
+                <?php endif; ?>
+                
+                <!-- POS hamma ko'rishi mumkin -->
                 <li class="nav-item">
                     <a href="/new-pos/pos" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'pos') !== false ? 'active' : '' ?>">
                         <i class="fas fa-shopping-cart"></i> <span>POS (Savdo)</span>
                     </a>
                 </li>
+                
+                <!-- Mahsulotlar – kassir ham qo'sha oladi -->
                 <li class="nav-item">
                     <a href="/new-pos/products" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'products') !== false ? 'active' : '' ?>">
                         <i class="fas fa-box"></i> <span>Mahsulotlar</span>
                     </a>
                 </li>
+                
+                <!-- Kategoriyalar -->
                 <li class="nav-item">
                     <a href="/new-pos/categories" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'categories') !== false ? 'active' : '' ?>">
                         <i class="fas fa-tags"></i> <span>Kategoriyalar</span>
                     </a>
                 </li>
+                
+                <!-- Subkategoriyalar -->
                 <li class="nav-item">
                     <a href="/new-pos/subcategories" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'subcategories') !== false ? 'active' : '' ?>">
                         <i class="fas fa-folder-open"></i> <span>Subkategoriyalar</span>
                     </a>
                 </li>
+                
+                <!-- Mijozlar – kassirga ruxsat -->
                 <li class="nav-item">
                     <a href="/new-pos/customers" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'customers') !== false ? 'active' : '' ?>">
                         <i class="fas fa-users"></i> <span>Mijozlar</span>
                     </a>
                 </li>
+                
+                <!-- Qarzdorlar – endi kassirga ham ruxsat -->
+                <li class="nav-item">
+                    <a href="/new-pos/debt" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'debt') !== false ? 'active' : '' ?>">
+                        <i class="fas fa-credit-card"></i> <span>Qarzdorlar</span>
+                    </a>
+                </li>
+                
+                <!-- Diller (Yetkazib beruvchilar) – kassirga ruxsat -->
                 <li class="nav-item">
                     <a href="/new-pos/yetkazib" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'yetkazib') !== false ? 'active' : '' ?>">
                         <i class="fas fa-truck"></i> <span>Dillerlar</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/new-pos/debt" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'debt') !== false ? 'active' : '' ?>">
-                        <i class="fas fa-credit-card"></i> <span>Qarzdorlar</span>
+                    <a href="/new-pos/kirim" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'kirim') !== false ? 'active' : '' ?>">
+                        <i class="fas fa-download"></i> <span>Kirimlar</span>
                     </a>
                 </li>
+                <!-- Qaytarish – kassirga ruxsat -->
                 <li class="nav-item">
                     <a href="/new-pos/returns" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'returns') !== false ? 'active' : '' ?>">
                         <i class="fas fa-undo-alt"></i> <span>Qaytarish</span>
                     </a>
                 </li>
+                
+                <!-- Hisobotlar – faqat admin -->
+                <?php if ($_SESSION['user']['rol_nomi'] == 'Admin'): ?>
                 <li class="nav-item">
                     <a href="/new-pos/reports" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'reports') !== false ? 'active' : '' ?>">
                         <i class="fas fa-chart-bar"></i> <span>Hisobotlar</span>
                     </a>
                 </li>
+                <?php endif; ?>
+                
+                <!-- Sozlamalar – faqat admin (profilni hisobga olmaganda) -->
+                <?php if ($_SESSION['user']['rol_nomi'] == 'Admin'): ?>
                 <li class="nav-item">
                     <a href="/new-pos/settings" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'settings') !== false ? 'active' : '' ?>">
                         <i class="fas fa-cog"></i> <span>Sozlamalar</span>
                     </a>
                 </li>
+                <?php endif; ?>
+                
+                <!-- Profil – hamma o'z profiliga kirishi mumkin -->
                 <li class="nav-item">
-                    <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 20px;">
+                    <a href="/new-pos/settings/profile" class="nav-link <?= strpos($_SERVER['REQUEST_URI'], 'profile') !== false ? 'active' : '' ?>">
+                        <i class="fas fa-user-circle"></i> <span>Mening profilim</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item divider">
+                    <hr>
                 </li>
                 <li class="nav-item">
                     <a href="/new-pos/logout" class="nav-link">

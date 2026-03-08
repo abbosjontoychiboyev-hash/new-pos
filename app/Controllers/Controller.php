@@ -15,8 +15,8 @@ abstract class Controller {
     /**
      * Viewni layout bilan chiqarish
      */
-    protected function view($view, $data = []) {
-        // View faylining to'liq yo'li
+    protected function view($view, $data = [], $layout = 'main') {
+    // View faylining to'liq yo'li
         $viewPath = APP_PATH . '/Views/pages/' . $view . '.php';
         
         if (!file_exists($viewPath)) {
@@ -33,9 +33,13 @@ abstract class Controller {
         $title = $data['title'] ?? $this->getTitleFromView($view);
         
         // Layout ni chiqarish
-        require APP_PATH . '/Views/layouts/main.php';
+        $layoutPath = APP_PATH . '/Views/layouts/' . $layout . '.php';
+        if (!file_exists($layoutPath)) {
+            die("Layout topilmadi: " . $layoutPath);
+        }
+        
+        require $layoutPath;
     }
-    
     /**
      * View nomidan title yaratish
      */

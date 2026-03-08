@@ -6,63 +6,67 @@ namespace App\Controllers;
 use App\Models\Product;
 use App\Models\Pos;
 use App\Models\Customer;
+use App\Models\SavdoSlot; 
 
 class PosController extends Controller {
     
     private $productModel;
     private $posModel;
     private $customerModel;
+    private $slotModel;
     
     public function __construct() {
         parent::__construct();
         $this->productModel = new Product();
         $this->posModel = new Pos();
         $this->customerModel = new Customer();
+        $this->slotModel = new SavdoSlot(); 
     }
     
     /**
      * POS asosiy sahifasi
      */
     public function index() {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect('login');
-        }
-        
-        // Kassir rolini tekshirish
-        if (!in_array($_SESSION['user']['rol_nomi'], ['Admin', 'Kassir'])) {
-            $_SESSION['flash']['error'] = 'Sizda POS ga kirish ruxsati yo\'q';
-            $this->redirect('dashboard');
-        }
-        
-        // Joriy smenani tekshirish
-        $smena = $this->posModel->getCurrentSmena($_SESSION['user_id']);
-        
-        // Kategoriyalarni olish
-        $categories = $this->db->query("SELECT * FROM kategoriyalar WHERE faol = 1 ORDER BY tartib")->fetchAll();
-        
-        // Mahsulotlarni olish
-        $products = $this->productModel->all();
-        
-        // Mijozlarni olish
-        $customers = $this->customerModel->all();
-        
-        // Savatni sessiyadan olish
-        $cart = $_SESSION['cart'] ?? [];
-        
-        // Savatdagi mahsulotlar uchun qo'shimcha ma'lumot
-        foreach ($cart as &$item) {
-            $product = $this->productModel->find($item['id']);
-            $item['stock'] = $product['miqdor'] ?? 0;
-        }
-        
-        $this->view('pos/index', [
-            'smena' => $smena,
-            'categories' => $categories,
-            'products' => $products,
-            'customers' => $customers,
-            'cart' => $cart
-        ]);
+    if (!isset($_SESSION['user_id'])) {
+        $this->redirect('login');
     }
+    
+    if (!in_array($_SESSION['user']['rol_nomi'], ['Admin', 'Kassir'])) {
+        $_SESSION['flash']['error'] = 'Sizda POS ga kirish ruxsati yo\'q';
+        $this->redirect('dashboard');
+    }
+    
+    $smena = $this->posModel->getCurrentSmena($_SESSION['user_id']);
+    $categories = $this->db->query("SELECT * FROM kategoriyalar WHERE faol = 1 ORDER BY tartib")->fetchAll();
+    $products = $this->productModel->all();
+    $customers = $this->customerModel->all();
+    
+    // Slotlarni yuklash va har bir slot uchun itemsni olish
+    $slots = [];
+    if (isset($this->slotModel)) {
+        $slotsData = $this->slotModel->getActiveSlots($_SESSION['user_id']);
+        foreach ($slotsData as $slot) {
+            $slot['items'] = $this->slotModel->getSlotItems($slot['id']);
+            $slots[] = $slot;
+        }
+        if (empty($slots)) {
+            $slotId = $this->slotModel->createSlot($_SESSION['user_id']);
+            $slots = $this->slotModel->getActiveSlots($_SESSION['user_id']);
+            // Yangi slot uchun items bo‘sh
+            foreach ($slots as &$slot) {
+                $slot['items'] = [];
+            }
+        }
+    }
+    
+    $this->view('pos/index', [
+        'smena' => $smena,
+        'categories' => $categories,
+        'products' => $products,
+        'customers' => $customers,
+        'slots' => $slots,
+    ]);
+}
     
     /**
      * Mahsulotlarni AJAX orqali qidirish
@@ -528,4 +532,270 @@ class PosController extends Controller {
         
         $this->redirect('pos');
     }
+  
+/**
+ * Slotlarni yuklash
+ */
+public function loadSlots() {
+    $slots = $this->slotModel->getActiveSlots($_SESSION['user_id']);
+    
+    // Agar slotlar bo'lmasa, bitta slot yaratish
+    if (empty($slots)) {
+        $slotId = $this->slotModel->createSlot($_SESSION['user_id']);
+        $slots = $this->slotModel->getActiveSlots($_SESSION['user_id']);
+    }
+    
+    return $slots;
+}
+
+/**
+ * Yangi slot yaratish
+ */
+public function createSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $this->json(['error' => 'CSRF token xato']);
+    }
+    
+    $slotId = $this->slotModel->createSlot($_SESSION['user_id']);
+    
+    if ($slotId) {
+        $this->json(['success' => true, 'slot_id' => $slotId]);
+    } else {
+        $this->json(['error' => 'Slot yaratishda xatolik']);
+    }
+}
+
+/**
+ * Slotga mahsulot qo'shish
+ */
+public function addToSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $_SESSION['flash']['error'] = 'CSRF token xato';
+        $this->redirect('pos');
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    $productId = $_POST['product_id'] ?? 0;
+    $quantity = $_POST['quantity'] ?? 1;
+    
+    // Mahsulot mavjudligini tekshirish
+    $product = $this->productModel->find($productId);
+    
+    if (!$product) {
+        $_SESSION['flash']['error'] = 'Mahsulot topilmadi';
+        $this->redirect('pos');
+    }
+    
+    if ($product['miqdor'] < $quantity) {
+        $_SESSION['flash']['error'] = 'Mahsulot yetarli emas. Qoldiq: ' . $product['miqdor'];
+        $this->redirect('pos');
+    }
+    
+    if ($this->slotModel->addProduct($slotId, $productId, $quantity)) {
+        $_SESSION['flash']['success'] = 'Mahsulot qo\'shildi';
+    } else {
+        $_SESSION['flash']['error'] = 'Xatolik yuz berdi';
+    }
+    
+    $this->redirect('pos');
+}
+
+/**
+ * Slotdan mahsulot o'chirish
+ */
+public function removeFromSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $_SESSION['flash']['error'] = 'CSRF token xato';
+        $this->redirect('pos');
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    $productId = $_POST['product_id'] ?? 0;
+    
+    if ($this->slotModel->removeProduct($slotId, $productId)) {
+        $_SESSION['flash']['success'] = 'Mahsulot o\'chirildi';
+    } else {
+        $_SESSION['flash']['error'] = 'Xatolik yuz berdi';
+    }
+    
+    $this->redirect('pos');
+}
+
+/**
+ * Slotdagi mahsulot sonini yangilash
+ */
+public function updateSlotQuantity() {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $slotId = $input['slot_id'] ?? 0;
+    $productId = $input['product_id'] ?? 0;
+    $quantity = $input['quantity'] ?? 1;
+    
+    $product = $this->productModel->find($productId);
+    
+    if (!$product) {
+        $this->json(['error' => 'Mahsulot topilmadi']);
+    }
+    
+    if ($product['miqdor'] < $quantity) {
+        $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . $product['miqdor']]);
+    }
+    
+    if ($this->slotModel->updateQuantity($slotId, $productId, $quantity)) {
+        $items = $this->slotModel->getSlotItems($slotId);
+        $total = $this->slotModel->updateSlotTotal($slotId);
+        
+        $this->json([
+            'success' => true,
+            'items' => $items,
+            'total' => $total
+        ]);
+    } else {
+        $this->json(['error' => 'Xatolik yuz berdi']);
+    }
+}
+
+/**
+ * Slotni to'xtatish (hold)
+ */
+public function holdSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $this->json(['error' => 'CSRF token xato']);
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    
+    if ($this->slotModel->updateStatus($slotId, 'kutilmoqda')) {
+        $_SESSION['flash']['success'] = 'Slot to\'xtatildi';
+    } else {
+        $_SESSION['flash']['error'] = 'Xatolik yuz berdi';
+    }
+    
+    $this->redirect('pos');
+}
+
+/**
+ * Slotni faollashtirish
+ */
+public function activateSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $this->json(['error' => 'CSRF token xato']);
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    
+    if ($this->slotModel->updateStatus($slotId, 'aktiv')) {
+        $_SESSION['flash']['success'] = 'Slot faollashtirildi';
+    } else {
+        $_SESSION['flash']['error'] = 'Xatolik yuz berdi';
+    }
+    
+    $this->redirect('pos');
+}
+
+/**
+ * Slot ma'lumotlarini yangilash (mijoz, nom)
+ */
+public function updateSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $this->json(['error' => 'CSRF token xato']);
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    $data = [];
+    
+    if (isset($_POST['nom'])) {
+        $data['nom'] = $_POST['nom'];
+    }
+    
+    if (isset($_POST['mijoz_id'])) {
+        $data['mijoz_id'] = $_POST['mijoz_id'] ?: null;
+    }
+    
+    if ($this->slotModel->updateSlot($slotId, $data)) {
+        $this->json(['success' => true]);
+    } else {
+        $this->json(['error' => 'Xatolik yuz berdi']);
+    }
+}
+
+/**
+ * Slotni yakunlash (savdoga aylantirish)
+ */
+public function checkoutSlot() {
+    if (!isset($_POST['csrf_token']) || !validate_csrf($_POST['csrf_token'])) {
+        $_SESSION['flash']['error'] = 'CSRF token xato';
+        $this->redirect('pos');
+    }
+    
+    $slotId = $_POST['slot_id'] ?? 0;
+    $paymentMethod = $_POST['payment_method'] ?? 'NAQD';
+    $paidAmount = floatval(str_replace(',', '', $_POST['paid_amount'] ?? '0'));
+    $customerId = !empty($_POST['customer_id']) ? $_POST['customer_id'] : null;
+    $note = $_POST['note'] ?? '';
+    
+    // Slotdagi mahsulotlarni olish
+    $items = $this->slotModel->getSlotItems($slotId);
+    
+    if (empty($items)) {
+        $_SESSION['flash']['error'] = 'Slot bo\'sh';
+        $this->redirect('pos');
+    }
+    
+    // Slot ma'lumotlarini olish
+    $slots = $this->slotModel->getActiveSlots($_SESSION['user_id']);
+    $currentSlot = null;
+    foreach ($slots as $slot) {
+        if ($slot['id'] == $slotId) {
+            $currentSlot = $slot;
+            break;
+        }
+    }
+    
+    if (!$currentSlot) {
+        $_SESSION['flash']['error'] = 'Slot topilmadi';
+        $this->redirect('pos');
+    }
+    
+    $total = $currentSlot['umumiy_summa'];
+    
+    // To'lov holati
+    if ($paidAmount >= $total) {
+        $paymentStatus = 'TOLANGAN';
+        $debt = 0;
+    } elseif ($paidAmount > 0) {
+        $paymentStatus = 'QISMAN';
+        $debt = $total - $paidAmount;
+    } else {
+        $paymentStatus = 'NASIYA';
+        $debt = $total;
+    }
+    
+    // Mijoz tanlanmagan bo'lsa va qarz bo'lsa, xatolik
+    if (!$customerId && $debt > 0) {
+        $_SESSION['flash']['error'] = 'Nasiya savdo uchun mijoz tanlashingiz kerak';
+        $this->redirect('pos');
+    }
+    
+    $tolovMalumotlari = [
+        'usul' => $paymentMethod,
+        'holat' => $paymentStatus,
+        'tolangan' => $paidAmount,
+        'qarz' => $debt,
+        'chegirma' => 0,
+        'izoh' => $note
+    ];
+    
+    try {
+        $savdoId = $this->slotModel->completeSlot($slotId, $tolovMalumotlari);
+        
+        $_SESSION['flash']['success'] = 'Savdo muvaffaqiyatli amalga oshirildi';
+        $this->redirect('pos/receipt/' . $savdoId);
+        
+    } catch (\Exception $e) {
+        error_log("Checkout slot error: " . $e->getMessage());
+        $_SESSION['flash']['error'] = 'Xatolik yuz berdi: ' . $e->getMessage();
+        $this->redirect('pos');
+    }
+}
 }

@@ -6,18 +6,14 @@ namespace App\Controllers;
 class AuthController extends Controller {
     
     public function loginForm() {
-        // Agar user allaqachon kirgan bo'lsa
         if (isset($_SESSION['user_id'])) {
             $this->redirect('dashboard');
         }
         
-        // Yangi CSRF token yaratish
-        csrf_token();
-        
-        // View ni ko'rsatish
-        $this->view('auth/login');
+        // auth layoutidan foydalanamiz
+        $this->view('auth/login', [], 'auth');
     }
-    
+        
     public function login() {
         // Debug uchun
         error_log("Login POST: " . print_r($_POST, true));

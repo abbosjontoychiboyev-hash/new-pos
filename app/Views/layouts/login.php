@@ -113,11 +113,7 @@
             <button type="submit" class="btn-login">Kirish</button>
         </form>
         
-        <div class="text-center mt-3">
-            <small class="text-muted">
-                Demo: admin / 123456
-            </small>
-        </div>
+    
     </div>
     
     <?php 

@@ -152,11 +152,9 @@ public function getTopProducts($limit = 5) {
 }
 
 /**
- * Oxirgi savdolar - TUZATILGAN
+ * Oxirgi savdolar (qaytarilganlar bilan birga)
  */
-public function getRecentSales($limit = 10) {
-    $limit = intval($limit);
-    
+public function getRecentSales($limit = 10, $showCancelled = true) {
     $sql = "
         SELECT 
             s.id,
@@ -165,22 +163,27 @@ public function getRecentSales($limit = 10) {
             s.yakuniy_summa,
             s.tolov_usuli,
             s.tolov_holati,
+            s.holat,
             u.fio as kassir_fio,
             m.fio as mijoz_fio,
             (SELECT COUNT(*) FROM savdo_tarkibi WHERE savdo_id = s.id) as mahsulotlar_soni
         FROM savdolar s
         LEFT JOIN foydalanuvchilar u ON s.kassir_id = u.id
         LEFT JOIN mijozlar m ON s.mijoz_id = m.id
-        WHERE s.holat = 'YAKUNLANGAN'
-        ORDER BY s.sotilgan_vaqt DESC
-        LIMIT {$limit}
+        WHERE 1=1
     ";
+    
+    // Agar bekor qilinganlarni ham ko'rsatmoqchi bo'lsak
+    if (!$showCancelled) {
+        $sql .= " AND s.holat = 'YAKUNLANGAN'";
+    }
+    
+    $sql .= " ORDER BY s.sotilgan_vaqt DESC LIMIT " . intval($limit);
     
     $stmt = $this->db->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll();
 }
-
 /**
  * Qarzdorlar (eng katta qarzlar) - TUZATILGAN
  */

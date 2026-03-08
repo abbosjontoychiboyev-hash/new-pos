@@ -207,13 +207,9 @@ class SettingController extends Controller {
      * Foydalanuvchilar ro'yxati
      */
     public function users() {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect('login');
-        }
-        
         if ($_SESSION['user']['rol_nomi'] !== 'Admin') {
-            $_SESSION['flash']['error'] = 'Sizda foydalanuvchilarni boshqarish ruxsati yo\'q';
-            $this->redirect('dashboard');
+            $_SESSION['flash']['error'] = 'Sizda foydalanuvchilarni boshqarish ruxsati yo‘q';
+            $this->redirect('settings/profile');
         }
         
         // $users = $this->userModel->getActive(); // ESLI KOD - FAQAT FAOL

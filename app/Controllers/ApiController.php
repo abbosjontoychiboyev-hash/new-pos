@@ -49,8 +49,22 @@ class ApiController extends Controller {
             'total' => $total
         ]);
     }
-    
-    /**
-     * Boshqa API metodlari...
-     */
+    public function getProduct($id) {
+        if (!isset($_SESSION['user_id'])) {
+            return $this->json(['error' => 'Avval tizimga kiring'], 401);
+        }
+        $productModel = new Product();
+        $product = $productModel->find($id);
+        if (!$product) {
+            return $this->json(['error' => 'Mahsulot topilmadi'], 404);
+        }
+        $categoryModel = new Category();
+        $category = $categoryModel->find($product['kategoriya_id']);
+        $stats = $productModel->getStats($id);
+        return $this->json([
+            'product' => $product,
+            'category' => $category,
+            'stats' => $stats
+        ]);
+    }
 }

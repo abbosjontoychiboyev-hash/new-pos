@@ -169,7 +169,7 @@ public function search($keyword, $limit = 20) {
     }
     
     // Mahsulot statistikasi
-    public function getStats($id) {
+     public function getStats($id) {
         $stmt = $this->db->prepare("
             SELECT 
                 COUNT(DISTINCT s.id) as jami_sotuvlar,
@@ -239,4 +239,5 @@ public function search($keyword, $limit = 20) {
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
+    
 }
