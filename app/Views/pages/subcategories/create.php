@@ -172,7 +172,7 @@
             
             document.getElementById('selectedCategoryName').textContent = categoryName;
             document.getElementById('selectedCategoryDescription').textContent = categoryDesc;
-            preview.style.display = 'block';
+            preview.style.display = 'flex'; // block o‘rniga flex (chunki .category-preview flex ishlatadi)
         } else {
             preview.style.display = 'none';
         }
@@ -276,7 +276,7 @@
                         name="kategoriya_id" 
                         required
                         onchange="showCategoryPreview(this)">
-                    <option value="">Kategoriya tanlang</option>
+                    <option value="" disabled <?= !isset($_SESSION['old']['kategoriya_id']) ? 'selected' : '' ?>>Kategoriya tanlang</option>
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['id'] ?>" 
                             <?= (isset($_SESSION['old']['kategoriya_id']) && $_SESSION['old']['kategoriya_id'] == $cat['id']) ? 'selected' : '' ?>

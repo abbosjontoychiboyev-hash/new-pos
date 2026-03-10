@@ -117,19 +117,16 @@ class CategoryController extends Controller {
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('login');
         }
-        
-        if (!in_array($_SESSION['user']['rol_nomi'], ['Admin', 'Omborchi'])) {
-            $_SESSION['flash']['error'] = 'Sizda kategoriya tahrirlash ruxsati yo\'q';
-            $this->redirect('categories');
-        }
-        
-        $category = $this->categoryModel->find($id);
-        
+
+        // Kategoriya modelini chaqirish
+        $categoryModel = new \App\Models\Category();  // Namespace to'liq yozilganiga ishonch hosil qiling
+        $category = $categoryModel->find($id);
+
         if (!$category) {
             $_SESSION['flash']['error'] = 'Kategoriya topilmadi';
             $this->redirect('categories');
         }
-        
+
         $this->view('categories/edit', ['category' => $category]);
     }
     
