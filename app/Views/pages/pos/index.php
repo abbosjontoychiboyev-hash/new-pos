@@ -10,7 +10,7 @@
         gap: 20px;
     }
 
-    /* Mahsulotlar bo‘limi – avvalgidek */
+    /* Mahsulotlar bo‘limi */
     .products-section {
         background: white;
         border-radius: 12px;
@@ -78,7 +78,7 @@
         color: #667eea;
     }
 
-    /* Savat bo‘limi – yangi dizayn */
+    /* Savat bo‘limi */
     .cart-section {
         background: white;
         border-radius: 12px;
@@ -249,7 +249,7 @@
         gap: 10px;
     }
 
-    /* Modal stillari avvalgidek */
+    /* Modal stillari */
     .modal-content { border-radius: 12px; }
     .modal-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -314,8 +314,7 @@
                      data-name="<?= htmlspecialchars($product['nomi']) ?>"
                      data-price="<?= $product['sotish_narxi'] ?>"
                      data-stock="<?= $product['miqdor'] ?>"
-                     data-category="<?= $product['kategoriya_id'] ?>"
-                     onclick="addToCart(<?= $product['id'] ?>)">
+                     data-category="<?= $product['kategoriya_id'] ?>">
                     <div class="barcode"><?= $product['shtrix_kod'] ?></div>
                     <div class="name"><?= htmlspecialchars($product['nomi']) ?></div>
                     <div class="price"><?= number_format($product['sotish_narxi'], 0, ',', ' ') ?> so'm</div>
@@ -328,7 +327,7 @@
             </div>
         </div>
 
-        <!-- Savat bo‘limi (o‘ng) – yangi dizayn -->
+        <!-- Savat bo‘limi (o‘ng) -->
         <div class="cart-section" id="cartSection">
             <div class="cart-header">
                 <i class="fas fa-shopping-bag"></i> SAVAT
@@ -369,26 +368,6 @@
                     <?php endif; ?>
                 </tbody>
             </table>
-
-            <!-- Mijoz balansi haqida xabar (agar mijoz tanlangan bo‘lsa) -->
-            <?php if (!empty($cart) && isset($customerId)): ?>
-            <div class="cart-message">
-                <i class="fas fa-info-circle"></i>
-                Balans: <strong><?= number_format($subtotal, 0, ',', ' ') ?> so'm</strong>
-                <?php if ($debt > 0): ?> (shundan qarz: <?= number_format($debt, 0, ',', ' ') ?> so'm)<?php endif; ?>
-            </div>
-            <?php endif; ?>
-
-            <!-- Funksiya tugmalari -->
-            <div class="function-buttons">
-                <span class="func-btn"><i class="fas fa-tag"></i> SELL ITEM</span>
-                <span class="func-btn"><i class="fas fa-percent"></i> DISCOUNTS</span>
-                <span class="func-btn"><i class="fas fa-undo-alt"></i> RETURNS</span>
-                <span class="func-btn"><i class="fas fa-credit-card"></i> VOUCHERS</span>
-                <span class="func-btn"><i class="fas fa-user"></i> USER FUNCTIONS</span>
-                <span class="func-btn"><i class="fas fa-exchange-alt"></i> TRANSACTION FUNC</span>
-                <span class="func-btn"><i class="fas fa-cog"></i> OTHER FUNC</span>
-            </div>
 
             <!-- Chegirma va summalar -->
             <div class="discount-section mb-3">
@@ -521,56 +500,163 @@ let selectedPaymentMethod = 'NAQD';
 let subtotal = <?= $subtotal ?? 0 ?>;
 
 // ================== SAVAT FUNKSIYALARI ==================
+// API yo‘lini yaratish (asosiy URL dan kelib chiqib)
+function apiPath(endpoint) {
+    return '/new-pos' + endpoint;
+}
+
 function addToCart(productId) {
     const product = document.querySelector(`.product-card[data-id="${productId}"]`);
+    if (!product) {
+        alert('Mahsulot topilmadi');
+        return;
+    }
     if (product.classList.contains('out-of-stock')) {
         alert('Mahsulot omborda mavjud emas!');
         return;
     }
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/new-pos/pos/add-to-cart';
-    form.innerHTML = `
-        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-        <input type="hidden" name="product_id" value="${productId}">
-        <input type="hidden" name="quantity" value="1">
-    `;
-    document.body.appendChild(form);
-    form.submit();
+
+    const fd = new FormData();
+    fd.append('csrf_token', '<?= csrf_token() ?>');
+    fd.append('product_id', productId);
+    fd.append('quantity', 1);
+
+    fetch(apiPath('/pos/add-to-cart'), {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => {
+        if (!response.ok) return response.text().then(t => { throw new Error('HTTP ' + response.status + ': ' + t); });
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) return response.json();
+        return response.text().then(t => {
+            try { return JSON.parse(t); } catch (e) { throw new Error('JSON xatolik: ' + t); }
+        });
+    })
+    .then(data => {
+        if (data && data.success) {
+            renderCart(data);
+        } else if (data && data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    })
+    .catch(err => {
+        console.error('addToCart error:', err);
+        alert('Xatolik yuz berdi: ' + (err.message || 'Iltimos, qayta urinib ko‘ring.'));
+    });
 }
 
 function updateCartItem(productId, quantity) {
-    fetch('/new-pos/pos/update-cart', {
+    fetch(apiPath('/pos/update-cart'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ product_id: productId, quantity: quantity, csrf_token: '<?= csrf_token() ?>' })
     })
     .then(response => response.json())
-    .then(data => data.success ? location.reload() : alert(data.error));
+    .then(data => {
+        if (data.success) refreshCart();
+        else alert(data.error || 'Xatolik yuz berdi');
+    });
 }
 
 function removeFromCart(productId) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/new-pos/pos/remove-from-cart';
-    form.innerHTML = `
-        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-        <input type="hidden" name="product_id" value="${productId}">
-    `;
-    document.body.appendChild(form);
-    form.submit();
+    if (!confirm('Mahsulotni savatdan o‘chirishni xohlaysizmi?')) return;
+    
+    const fd = new FormData();
+    fd.append('csrf_token', '<?= csrf_token() ?>');
+    fd.append('product_id', productId);
+
+    // MUHIM: To‘g‘ridan-to‘g‘ri to‘liq yo‘lni yozing
+    fetch('/new-pos/pos/remove-from-cart', {  
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) renderCart(data);
+        else alert(data.error || 'Xatolik yuz berdi');
+    })
+    .catch(err => console.error(err));
 }
 
 function clearCart() {
     if (confirm('Savatni tozalashni xohlaysizmi?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/new-pos/pos/clear-cart';
-        form.innerHTML = `<input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">`;
-        document.body.appendChild(form);
-        form.submit();
+        const fd = new FormData();
+        fd.append('csrf_token', '<?= csrf_token() ?>');
+        fetch(apiPath('/pos/clear-cart'), {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) return response.text().then(t => { throw new Error('HTTP ' + response.status + ': ' + t); });
+            return response.json();
+        })
+        .then(data => { if (data && data.success) renderCart(data); else location.reload(); })
+        .catch(err => { console.error('clearCart error:', err); alert('Xatolik yuz berdi: ' + (err.message || '')); });
     }
 }
+
+function refreshCart() {
+    fetch(apiPath('/pos/view-cart'), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(data => {
+        if (data) renderCart({ items: data.items, total: data.total });
+    });
+}
+
+function renderCart(data) {
+    const items = data.items || data || [];
+    const total = data.total || 0;
+    const tbody = document.getElementById('cartItems');
+    tbody.innerHTML = '';
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Savat bo‘sh</td></tr>';
+        document.getElementById('subtotal').textContent = '0 so‘m';
+        document.getElementById('cartTotal').textContent = '0 so‘m';
+        document.getElementById('checkoutBtn').disabled = true;
+        subtotal = 0;
+        calculateDiscount();
+        return;
+    }
+
+    let sum = 0;
+    items.forEach(item => {
+        sum += parseFloat(item.total || 0);
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-id', item.id);
+        tr.innerHTML = `
+            <td>
+                <span class="cart-product-name">${escapeHtml(item.name)}</span>
+                <span class="cart-product-sku">${item.barcode || ''}</span>
+            </td>
+            <td>
+                <input type="number" class="cart-qty-input" value="${item.quantity}" min="1" max="${item.stock}" onchange="updateCartItem(${item.id}, this.value)">
+                <i class="fas fa-trash cart-remove" onclick="removeFromCart(${item.id})"></i>
+            </td>
+            <td class="cart-price">${numberFormat(item.price)} so‘m</td>
+            <td class="cart-price">${numberFormat(item.total)} so‘m</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    subtotal = sum;
+    document.getElementById('subtotal').textContent = numberFormat(subtotal) + ' so‘m';
+    document.getElementById('cartTotal').textContent = numberFormat(subtotal) + ' so‘m';
+    document.getElementById('paidAmount').value = subtotal;
+    document.getElementById('checkoutBtn').disabled = false;
+    calculateDiscount();
+}
+
+function numberFormat(n) { return (parseFloat(n||0)).toLocaleString(); }
+function escapeHtml(unsafe) { return (unsafe||'').replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
 
 // ================== CHEGIRMA ==================
 function calculateDiscount() {
@@ -585,7 +671,6 @@ function calculateDiscount() {
     if (discountAmount > subtotal) discountAmount = subtotal;
     const total = subtotal - discountAmount;
 
-    // Display
     if (discountAmount > 0) {
         document.getElementById('discountRow').style.display = 'flex';
         document.getElementById('discountDisplay').textContent = '-' + discountAmount.toLocaleString() + ' so‘m';
@@ -709,6 +794,19 @@ document.querySelectorAll('.category-tab').forEach(tab => {
     });
 });
 
+document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const id = this.dataset.id;
+        if (!id) return;
+        if (this.classList.contains('out-of-stock')) {
+            alert('Mahsulot omborda mavjud emas!');
+            return;
+        }
+        addToCart(id);
+    });
+});
+
 // ================== KLAVIATURA QISQARTMALARI ==================
 document.addEventListener('keydown', e => {
     if (e.key === 'F2') { e.preventDefault(); document.getElementById('searchProduct').focus(); }
@@ -719,7 +817,7 @@ document.addEventListener('keydown', e => {
     if (e.key === '3') selectPaymentMethod('ARALASH');
 });
 
-// Barcode scanner
+// ================== BARKOD SKANER ==================
 let barcodeBuffer = '';
 let barcodeTimeout;
 document.addEventListener('keypress', e => {
@@ -743,7 +841,7 @@ document.addEventListener('keypress', e => {
     }
 });
 
-// Initial
+// ================== SAHIFA YUKLANGANDA ==================
 document.addEventListener('DOMContentLoaded', () => {
     calculateChange();
     document.getElementById('searchProduct').focus();

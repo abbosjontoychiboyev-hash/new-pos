@@ -63,41 +63,41 @@ if (!file_exists($routesFile)) {
 }
 
 $routes = require $routesFile;
-$method = $_SERVER['REQUEST_METHOD'];
+$httpMethod = $_SERVER['REQUEST_METHOD'];
 
-// AJAX tekshirish
-if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-    $method = 'AJAX';
-}
+// AJAX tekshirish: agar AJAX bo'lsa, ikkita dispatch kaliti bilan tekshiramiz: 'AJAX' va haqiqiy HTTP method
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+
+$dispatchMethods = $isAjax ? ['AJAX', $httpMethod] : [$httpMethod];
 
 // Debug
-error_log("Request URI: " . $requestUri);
-error_log("Method: " . $method);
+error_log("Request URI: " . $_SERVER['REQUEST_URI']);
+error_log("Dispatch methods: " . implode(',', $dispatchMethods));
 
 // Route ni ishga tushirish
-route_dispatch($routes, $method, $requestUri);
+route_dispatch($routes, $dispatchMethods, $requestUri);
 
-function route_dispatch($routes, $method, $uri) {
-    
-    if (!isset($routes[$method])) {
-        http_response_code(405);
-        echo 'Method not allowed';
-        return;
-    }
-    
+function route_dispatch($routes, array $methods, $uri) {
+
     // Maxsus hol: bo'sh URI (bosh sahifa)
     if ($uri === '' || $uri === 'index.php') {
         $uri = '';
     }
-    
-    foreach ($routes[$method] as $pattern => $handler) {
+
+    foreach ($methods as $method) {
+        if (!isset($routes[$method])) {
+            // key mavjud emas, navbatdagi methodga o'tamiz
+            continue;
+        }
+
+        foreach ($routes[$method] as $pattern => $handler) {
         $pattern = trim($pattern, '/');
-        
-        // Pattern ni regex ga aylantirish
-        $regexPattern = preg_replace('/\{[a-z]+\}/', '([^/]+)', $pattern);
+
+        // Patternni regexga aylantirish - {param} qismi har qanday alfanumerik va underscore uchun ishlaydi
+        $regexPattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([^/]+)', $pattern);
         $regexPattern = '/^' . str_replace('/', '\/', $regexPattern) . '$/';
-        
+
         if (preg_match($regexPattern, $uri, $matches)) {
             // Birinchi elementni olib tashlash (to'liq match)
             array_shift($matches);
@@ -118,21 +118,25 @@ function route_dispatch($routes, $method, $uri) {
             call_user_func_array([$controllerInstance, $action], $matches);
             return;
         }
+        }
     }
-    
+
     // 404 - Sahifa topilmadi
     http_response_code(404);
     echo "404 - Sahifa topilmadi: /" . $uri;
-    echo "<br><br>Mavjud route'lar (" . $method . "):";
+    echo "<br><br>Mavjud route'lar (" . htmlentities(implode(',', $methods)) . "):";
     echo "<ul>";
-    foreach (array_keys($routes[$method] ?? []) as $route) {
-        echo "<li>" . ($route ?: '/') . "</li>";
+    // Ko'rsatilgan dispatch methodlar uchun mavjud route'larni chiqaramiz
+    foreach ($methods as $m) {
+        foreach (array_keys($routes[$m] ?? []) as $route) {
+            echo "<li>" . ($route ?: '/') . " (" . htmlentities($m) . ")</li>";
+        }
     }
     echo "</ul>";
     echo "<h3>Debug:</h3>";
-echo "ROUTES_PATH: " . ROUTES_PATH . "<br>";
-echo "Routes file exists: " . (file_exists(ROUTES_PATH . '/web.php') ? 'Yes' : 'No') . "<br>";
-echo "Request URI: " . $_SERVER['REQUEST_URI'] . "<br>";
-echo "Cleaned URI: " . $requestUri . "<br>";
-echo "Method: " . $method . "<br>";
+    echo "ROUTES_PATH: " . ROUTES_PATH . "<br>";
+    echo "Routes file exists: " . (file_exists(ROUTES_PATH . '/web.php') ? 'Yes' : 'No') . "<br>";
+    echo "Request URI: " . htmlentities($_SERVER['REQUEST_URI']) . "<br>";
+    echo "Cleaned URI: " . htmlentities($uri) . "<br>";
+    echo "Dispatch methods: " . htmlentities(implode(',', $methods)) . "<br>";
 }

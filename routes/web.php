@@ -174,6 +174,11 @@ return [
         'pos/remove-from-slot'      => ['PosController', 'removeFromSlot'],
         'pos/update-slot-quantity'  => ['PosController', 'updateSlotQuantity'],
         'pos/checkout-slot'         => ['PosController', 'checkoutSlot'],
+        'pos/add-to-cart'           => ['PosController', 'addToCart'],
+        'pos/remove-from-cart'      => ['PosController', 'removeFromCart'], 
+        'pos/clear-cart'            => ['PosController', 'clearCart'],
+        'pos/update-cart'           => ['PosController', 'updateCart'],
+       
 
         //Kirim
         'kirim/store' => ['KirimController', 'store'],
