@@ -307,4 +307,46 @@ public function getCashierRanking($limit = 5) {
         ");
         return $stmt->fetch()['avg_daily'] ?? 0;
     }
+    public function getSupplierDebtStats()
+    {
+        $sql = "
+            SELECT
+                COALESCE(SUM(
+                    CASE
+                        WHEN qarz > 0 THEN qarz
+                        WHEN jami_olingan > jami_tolangan THEN (jami_olingan - jami_tolangan)
+                        ELSE 0
+                    END
+                ), 0) AS jami_yetkazib_beruvchi_qarzi,
+                COALESCE(SUM(
+                    CASE
+                        WHEN (qarz > 0) OR (jami_olingan > jami_tolangan) THEN 1
+                        ELSE 0
+                    END
+                ), 0) AS qarzdor_yetkazib_beruvchilar_soni
+            FROM yetkazib_beruvchilar
+            WHERE faol = 1
+            AND ochirilgan_vaqt IS NULL
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function getStockCostStats()
+    {
+        $sql = "
+            SELECT
+                COALESCE(SUM(miqdor * kelish_narxi), 0) AS jami_ombor_tannarxi,
+                COALESCE(SUM(miqdor), 0) AS jami_ombor_miqdori
+            FROM mahsulotlar
+            WHERE faol = 1
+            AND ochirilgan_vaqt IS NULL
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
+    }
 }

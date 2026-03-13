@@ -6,28 +6,32 @@ namespace App\Controllers;
 use App\Models\Dashboard;
 use App\Models\Product;
 
-class DashboardController extends Controller {
-    
+class DashboardController extends Controller
+{
     private $dashboardModel;
     private $productModel;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         parent::__construct();
         $this->dashboardModel = new Dashboard();
         $this->productModel = new Product();
     }
-    
-    public function index() {
+
+    public function index()
+    {
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('login');
+            return;
         }
-        
-        if ($_SESSION['user']['rol_nomi'] !== 'Admin') {
+
+        if (($_SESSION['user']['rol_nomi'] ?? '') !== 'Admin') {
             $_SESSION['flash']['error'] = 'Sizda bu sahifaga kirish ruxsati yo\'q';
             $this->redirect('pos');
+            return;
         }
-        
-        // Barcha statistik ma'lumotlarni olish
+
+        // Asosiy statistikalar
         $stats = $this->dashboardModel->getStats();
         $lowStockProducts = $this->dashboardModel->getLowStockProducts(10);
         $topProducts = $this->dashboardModel->getTopProducts(5);
@@ -35,11 +39,38 @@ class DashboardController extends Controller {
         $topDebtors = $this->dashboardModel->getTopDebtors(5);
         $cashierRanking = $this->dashboardModel->getCashierRanking(5);
         $dailyStats = $this->dashboardModel->getDailyStats(7);
-       
-        
+
+        // Qo‘shimcha statistikalar
+        $supplierDebtStats = method_exists($this->dashboardModel, 'getSupplierDebtStats')
+            ? $this->dashboardModel->getSupplierDebtStats()
+            : [];
+
+        $stockCostStats = method_exists($this->dashboardModel, 'getStockCostStats')
+            ? $this->dashboardModel->getStockCostStats()
+            : [];
+
+        // total bo‘lim bo‘lmasa yaratib qo‘yamiz
+        if (!isset($stats['total']) || !is_array($stats['total'])) {
+            $stats['total'] = [];
+        }
+
+        // Dillerlar qarzi statistikasi
+        $stats['total']['jami_yetkazib_beruvchi_qarzi'] =
+            (float)($supplierDebtStats['jami_yetkazib_beruvchi_qarzi'] ?? 0);
+
+        $stats['total']['qarzdor_yetkazib_beruvchilar_soni'] =
+            (int)($supplierDebtStats['qarzdor_yetkazib_beruvchilar_soni'] ?? 0);
+
+        // Ombordagi jami tannarx statistikasi
+        $stats['total']['jami_ombor_tannarxi'] =
+            (float)($stockCostStats['jami_ombor_tannarxi'] ?? 0);
+
+        $stats['total']['jami_ombor_miqdori'] =
+            (int)($stockCostStats['jami_ombor_miqdori'] ?? 0);
+
         // Kam qolgan mahsulotlar soni
         $lowStockCount = count($lowStockProducts);
-        
+
         $this->view('dashboard/index', [
             'stats' => $stats,
             'lowStockProducts' => $lowStockProducts,
@@ -51,14 +82,48 @@ class DashboardController extends Controller {
             'dailyStats' => $dailyStats
         ]);
     }
-    
+
     /**
      * AJAX orqali statistikani yangilash
      */
-    public function refreshStats() {
+    public function refreshStats()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            $this->json([
+                'success' => false,
+                'message' => 'Avval tizimga kiring'
+            ]);
+            return;
+        }
+
         $stats = $this->dashboardModel->getStats();
+
+        $supplierDebtStats = method_exists($this->dashboardModel, 'getSupplierDebtStats')
+            ? $this->dashboardModel->getSupplierDebtStats()
+            : [];
+
+        $stockCostStats = method_exists($this->dashboardModel, 'getStockCostStats')
+            ? $this->dashboardModel->getStockCostStats()
+            : [];
+
+        if (!isset($stats['total']) || !is_array($stats['total'])) {
+            $stats['total'] = [];
+        }
+
+        $stats['total']['jami_yetkazib_beruvchi_qarzi'] =
+            (float)($supplierDebtStats['jami_yetkazib_beruvchi_qarzi'] ?? 0);
+
+        $stats['total']['qarzdor_yetkazib_beruvchilar_soni'] =
+            (int)($supplierDebtStats['qarzdor_yetkazib_beruvchilar_soni'] ?? 0);
+
+        $stats['total']['jami_ombor_tannarxi'] =
+            (float)($stockCostStats['jami_ombor_tannarxi'] ?? 0);
+
+        $stats['total']['jami_ombor_miqdori'] =
+            (int)($stockCostStats['jami_ombor_miqdori'] ?? 0);
+
         $lowStockCount = count($this->dashboardModel->getLowStockProducts(10));
-        
+
         $this->json([
             'success' => true,
             'stats' => $stats,

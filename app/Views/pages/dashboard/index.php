@@ -67,6 +67,35 @@
             <i class="fas fa-exclamation-triangle"></i>
         </div>
     </div>
+    <!-- Yetkazib beruvchilarga qarz -->
+    <div class="stat-card warning">
+        <div class="stat-title">YETKAZIB BERUVCHILARGA QARZ</div>
+        <div class="stat-value">
+            <?= number_format($stats['total']['jami_yetkazib_beruvchi_qarzi'] ?? 0, 0, ',', ' ') ?> so'm
+        </div>
+        <div class="stat-desc">
+            <i class="fas fa-truck"></i>
+            <?= $stats['total']['qarzdor_yetkazib_beruvchilar_soni'] ?? 0 ?> ta yetkazib beruvchi
+        </div>
+        <div class="stat-icon">
+            <i class="fas fa-truck-loading"></i>
+        </div>
+    </div>
+
+    <!-- Ombordagi jami tannarx -->
+    <div class="stat-card primary">
+        <div class="stat-title">OMBORDAGI JAMI TANNARX</div>
+        <div class="stat-value">
+            <?= number_format($stats['total']['jami_ombor_tannarxi'] ?? 0, 0, ',', ' ') ?> so'm
+        </div>
+        <div class="stat-desc">
+            <i class="fas fa-boxes"></i>
+            Jami miqdor: <?= number_format($stats['total']['jami_ombor_miqdori'] ?? 0, 0, ',', ' ') ?>
+        </div>
+        <div class="stat-icon">
+            <i class="fas fa-warehouse"></i>
+        </div>
+    </div>
 </div>
 
 <!-- Charts Row -->
