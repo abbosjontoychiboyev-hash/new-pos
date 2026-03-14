@@ -518,8 +518,7 @@
                                     <span class="cart-product-sku"><?= $item['barcode'] ?></span>
                                 </td>
                                 <td>
-                                    <input type="number" class="cart-qty-input" value="<?= $item['quantity'] ?>" min="1" max="<?= $item['stock'] ?>" onchange="updateCartItem(<?= $item['id'] ?>, this.value)">
-                                    <i class="fas fa-trash cart-remove" onclick="removeFromCart(<?= $item['id'] ?>)"></i>
+                                    <input type="number" class="cart-qty-input" value="<?= $item['quantity'] ?>" min="1" max="<?= $item['stock'] ?>" step="any" onchange="updateCartItem(<?= $item['id'] ?>, this.value)">
                                 </td>
                                 <td class="cart-price"><?= number_format($item['price'], 0, ',', ' ') ?> so'm</td>
                                 <td class="cart-price"><?= number_format($item['total'], 0, ',', ' ') ?> so'm</td>
@@ -807,7 +806,7 @@ function renderCart(data) {
                 <span class="cart-product-sku">${item.barcode || ''}</span>
             </td>
             <td>
-                <input type="number" class="cart-qty-input" value="${item.quantity}" min="1" max="${item.stock}" onchange="updateCartItem(${item.id}, this.value)">
+                <input type="number" class="cart-qty-input" value="${item.quantity}" min="1" max="${item.stock}" step="any" onchange="updateCartItem(${item.id}, this.value)">
                 <i class="fas fa-trash cart-remove" onclick="removeFromCart(${item.id})"></i>
             </td>
             <td class="cart-price">${numberFormat(item.price)} so‘m</td>

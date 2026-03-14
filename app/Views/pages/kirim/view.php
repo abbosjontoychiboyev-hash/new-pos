@@ -50,7 +50,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($tarkib as $t): ?>
+                <?php foreach ($mahsulotlar as $t): ?>
                 <tr>
                     <td><?= htmlspecialchars($t['nomi']) ?></td>
                     <td><?= $t['shtrix_kod'] ?></td>

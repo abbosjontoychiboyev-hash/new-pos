@@ -100,7 +100,7 @@ class PosController extends Controller
         }
 
         $productId = (int)($_POST['product_id'] ?? 0);
-        $quantity = (int)($_POST['quantity'] ?? 1);
+        $quantity = (float)($_POST['quantity'] ?? 1);
 
         $product = $this->productModel->find($productId);
         if (!$product) {
@@ -591,7 +591,7 @@ class PosController extends Controller
 
         $slotId = (int)($input['slot_id'] ?? 0);
         $productId = (int)($input['product_id'] ?? 0);
-        $quantity = (int)($input['quantity'] ?? 1);
+        $quantity = (float)($input['quantity'] ?? 1);
 
         $product = $this->productModel->find($productId);
         if (!$product) {

@@ -175,7 +175,7 @@ class KirimController extends Controller {
         $stmt->execute([$id]);
         $mahsulotlar = $stmt->fetchAll();
         
-        $this->view('kirim/show', [
+        $this->view('kirim/view', [
             'kirim' => $kirim,
             'mahsulotlar' => $mahsulotlar
         ]);
