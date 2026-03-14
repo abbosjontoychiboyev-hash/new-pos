@@ -158,8 +158,8 @@
     
     // Calculate profit
     function calculateProfit() {
-        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9]/g, '')) || 0;
-        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9]/g, '')) || 0;
+        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
+        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
         
         if (kelish > 0 && sotish > 0) {
             let foyda = sotish - kelish;
@@ -180,8 +180,8 @@
     
     // Form submit validation
     document.getElementById('productForm')?.addEventListener('submit', function(e) {
-        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9]/g, '')) || 0;
-        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9]/g, '')) || 0;
+        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
+        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
         
         if (sotish < kelish) {
             if (!confirm('Sotish narxi kelish narxidan past. Davom etishni xohlaysizmi?')) {
@@ -202,6 +202,17 @@
         <?php if (isset($_SESSION['old']['kategoriya_id']) && $_SESSION['old']['kategoriya_id']): ?>
             loadSubcategories(<?= $_SESSION['old']['kategoriya_id'] ?>);
         <?php endif; ?>
+
+        // Adjust quantity step based on unit selection
+        function updateQuantityStep() {
+            const unit = document.getElementById('birlik')?.value || '';
+            const step = (unit.toLowerCase() === 'kg' || unit.toLowerCase() === 'litr') ? '0.001' : '1';
+            document.getElementById('miqdor').step = step;
+            document.getElementById('minimal_miqdor').step = step;
+        }
+
+        document.getElementById('birlik')?.addEventListener('change', updateQuantityStep);
+        updateQuantityStep();
         
         // Character counter for product name
         const nomiInput = document.getElementById('nomi');
@@ -371,7 +382,7 @@
                            name="kelish_narxi" 
                            value="<?= isset($_SESSION['old']['kelish_narxi']) ? $_SESSION['old']['kelish_narxi'] : '' ?>"
                            placeholder="0"
-                           onkeyup="this.value = this.value.replace(/[^0-9]/g, '')"
+                           onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')"
                            required>
                     <span class="input-group-text">so'm</span>
                 </div>
@@ -394,7 +405,7 @@
                            name="sotish_narxi" 
                            value="<?= isset($_SESSION['old']['sotish_narxi']) ? $_SESSION['old']['sotish_narxi'] : '' ?>"
                            placeholder="0"
-                           onkeyup="this.value = this.value.replace(/[^0-9]/g, '')"
+                           onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')"
                            required>
                     <span class="input-group-text">so'm</span>
                 </div>

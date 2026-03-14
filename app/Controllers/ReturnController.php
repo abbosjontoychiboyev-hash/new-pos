@@ -98,40 +98,79 @@ class ReturnController extends Controller {
             $this->redirect('returns/search?receipt=' . urlencode($receiptNumber));
         }
         
-        // Qaytarish jarayoni (soddalashtirilgan)
+        $returnItems = $_POST['return_items'] ?? [];
+        
+        if (empty($returnItems)) {
+            $_SESSION['flash']['error'] = 'Qaytariladigan mahsulotlarni tanlang';
+            $this->redirect('returns/search?receipt=' . urlencode($receiptNumber));
+        }
+        
+        // Qaytarish jarayoni
         try {
             $this->db->beginTransaction();
             
-            // Savdo tarkibini olish
-            $stmt = $this->db->prepare("SELECT * FROM savdo_tarkibi WHERE savdo_id = ?");
-            $stmt->execute([$saleId]);
-            $items = $stmt->fetchAll();
+            $totalReturnAmount = 0;
             
-            foreach ($items as $item) {
-                // Mahsulot miqdorini omborga qaytarish
+            foreach ($returnItems as $itemId => $quantity) {
+                $quantity = (float)$quantity;
+                if ($quantity <= 0) continue;
+                
+                // Item ma'lumotlarini olish
+                $stmt = $this->db->prepare("SELECT * FROM savdo_tarkibi WHERE id = ? AND savdo_id = ?");
+                $stmt->execute([$itemId, $saleId]);
+                $item = $stmt->fetch();
+                
+                if (!$item || $item['soni'] < $quantity) {
+                    throw new \Exception('Noto\'g\'ri miqdor');
+                }
+                
+                $returnAmount = $quantity * $item['birlik_narx'];
+                $totalReturnAmount += $returnAmount;
+                
+                // Qaytarishni saqlash
+                $stmt = $this->db->prepare("
+                    INSERT INTO qaytarishlar (savdo_id, savdo_tarkibi_id, mahsulot_id, miqdor, summa, sabab, foydalanuvchi_id, qaytarilgan_vaqt)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                ");
+                $stmt->execute([$saleId, $itemId, $item['mahsulot_id'], $quantity, $returnAmount, $reason, $_SESSION['user_id']]);
+                
+                // Savdo tarkibini yangilash
+                if ($item['soni'] == $quantity) {
+                    // To'liq qaytarish
+                    $stmt = $this->db->prepare("DELETE FROM savdo_tarkibi WHERE id = ?");
+                    $stmt->execute([$itemId]);
+                } else {
+                    // Qisman qaytarish
+                    $stmt = $this->db->prepare("UPDATE savdo_tarkibi SET soni = soni - ?, qator_summa = qator_summa - ? WHERE id = ?");
+                    $stmt->execute([$quantity, $returnAmount, $itemId]);
+                }
+                
+                // Omborga qaytarish
                 $stmt = $this->db->prepare("UPDATE mahsulotlar SET miqdor = miqdor + ? WHERE id = ?");
-                $stmt->execute([$item['soni'], $item['mahsulot_id']]);
+                $stmt->execute([$quantity, $item['mahsulot_id']]);
+                
+                // Warehouse journal
+                $stmt = $this->db->prepare("
+                    INSERT INTO ombor_jurnali (mahsulot_id, amal, miqdor_ozgarish, eski_miqdor, yangi_miqdor, manba_turi, izoh)
+                    SELECT ?, 'KIRIM', ?, miqdor - ?, miqdor, 'QAYTARISH', ? FROM mahsulotlar WHERE id = ?
+                ");
+                $stmt->execute([$item['mahsulot_id'], $quantity, $quantity, "Qaytarish: $reason", $item['mahsulot_id']]);
             }
             
-            // Savdo tarkibini o'chirish
-            $stmt = $this->db->prepare("DELETE FROM savdo_tarkibi WHERE savdo_id = ?");
-            $stmt->execute([$saleId]);
-            
-            // Savdoni bekor qilish
+            // Savdo umumiy summasini yangilash
             $stmt = $this->db->prepare("
-                UPDATE savdolar 
-                SET holat = 'BEKOR', 
-                    umumiy_summa = 0, 
-                    yakuniy_summa = 0,
-                    tolangan_summa = 0,
-                    qarz_summa = 0
+                UPDATE savdolar SET 
+                    umumiy_summa = (SELECT IFNULL(SUM(qator_summa), 0) FROM savdo_tarkibi WHERE savdo_id = id),
+                    yakuniy_summa = umumiy_summa - chegirma_summa,
+                    tolangan_summa = LEAST(tolangan_summa, yakuniy_summa),
+                    qarz_summa = GREATEST(0, yakuniy_summa - tolangan_summa)
                 WHERE id = ?
             ");
             $stmt->execute([$saleId]);
             
             $this->db->commit();
             
-            $_SESSION['flash']['success'] = 'Mahsulot muvaffaqiyatli qaytarildi';
+            $_SESSION['flash']['success'] = 'Mahsulotlar muvaffaqiyatli qaytarildi. Jami: ' . number_format($totalReturnAmount, 2) . ' so\'m';
             
         } catch (\Exception $e) {
             $this->db->rollBack();

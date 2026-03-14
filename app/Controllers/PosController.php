@@ -25,6 +25,26 @@ class PosController extends Controller
     }
 
     /**
+     * Normalize quantity for units: integers for "dona" and up to 3 decimals for kg/litr.
+     */
+    private function normalizeQuantity($quantity, $unit = null)
+    {
+        $quantity = floatval($quantity);
+        if ($quantity <= 0) {
+            return 0;
+        }
+
+        $unit = strtolower(trim((string)$unit));
+        // Dona (pcs) should be whole numbers
+        if (in_array($unit, ['dona', 'piece', 'pcs', 'шт'], true)) {
+            return (int) round($quantity);
+        }
+
+        // Default: allow up to 3 decimal places (kilogram, litr, etc.)
+        return round($quantity, 3);
+    }
+
+    /**
      * POS asosiy sahifasi
      */
     public function index()
@@ -100,11 +120,22 @@ class PosController extends Controller
         }
 
         $productId = (int)($_POST['product_id'] ?? 0);
-        $quantity = (float)($_POST['quantity'] ?? 1);
+        $rawQuantity = $_POST['quantity'] ?? 1;
 
         $product = $this->productModel->find($productId);
         if (!$product) {
             $this->json(['error' => 'Mahsulot topilmadi'], 404);
+        }
+
+        $quantity = $this->normalizeQuantity($rawQuantity, $product['birlik'] ?? null);
+
+        if ($quantity <= 0) {
+            $this->json(['error' => 'Miqdor 0 dan katta bo\'lishi kerak'], 400);
+        }
+
+        // Dona (integer) mahsulotlar uchun butun son bo'lishi kerak
+        if (in_array(strtolower($product['birlik']), ['dona', 'piece', 'pcs', 'шт'], true) && (float)$quantity != (int)$quantity) {
+            $this->json(['error' => 'Dona birlikdagi mahsulot uchun butun miqdor kiriting'], 400);
         }
 
         if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
@@ -114,7 +145,11 @@ class PosController extends Controller
         $found = false;
         foreach ($_SESSION['cart'] as &$item) {
             if ($item['id'] == $productId) {
-                $item['quantity'] += $quantity;
+                $newQty = $this->normalizeQuantity($item['quantity'] + $quantity, $product['birlik'] ?? null);
+                if ((float)$product['miqdor'] < $newQty) {
+                    $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . number_format($product['miqdor'], 3)], 400);
+                }
+                $item['quantity'] = $newQty;
                 $item['total'] = $item['price'] * $item['quantity'];
                 $found = true;
                 break;
@@ -123,6 +158,9 @@ class PosController extends Controller
         unset($item); // muhim
 
         if (!$found) {
+            if ((float)$product['miqdor'] < $quantity) {
+                $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . number_format($product['miqdor'], 3)], 400);
+            }
             $_SESSION['cart'][] = [
                 'id' => $product['id'],
                 'barcode' => $product['shtrix_kod'],
@@ -130,7 +168,8 @@ class PosController extends Controller
                 'price' => $product['sotish_narxi'],
                 'quantity' => $quantity,
                 'total' => $product['sotish_narxi'] * $quantity,
-                'stock' => $product['miqdor']
+                'stock' => $product['miqdor'],
+                'unit' => $product['birlik']
             ];
         }
 
@@ -202,14 +241,43 @@ class PosController extends Controller
         }
 
         $productId = (int)($input['product_id'] ?? 0);
-        $quantity = (int)($input['quantity'] ?? 1);
+        $rawQuantity = $input['quantity'] ?? 1;
 
         $product = $this->productModel->find($productId);
         if (!$product) {
             $this->json(['error' => 'Mahsulot topilmadi'], 404);
         }
-        if ($product['miqdor'] < $quantity) {
-            $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . $product['miqdor']]);
+
+        $quantity = $this->normalizeQuantity($rawQuantity, $product['birlik'] ?? null);
+
+        // Noto'g'ri miqdor
+        if ($quantity < 0) {
+            $this->json(['error' => 'Miqdor manfiy bo‘lishi mumkin emas'], 400);
+        }
+
+        // 0 kiritilgan: savatdan o'chirish
+        if ($quantity == 0) {
+            if (isset($_SESSION['cart'])) {
+                foreach ($_SESSION['cart'] as $key => $item) {
+                    if ($item['id'] == $productId) {
+                        unset($_SESSION['cart'][$key]);
+                        break;
+                    }
+                }
+                $_SESSION['cart'] = array_values($_SESSION['cart'] ?? []);
+            }
+
+            $total = array_sum(array_column($_SESSION['cart'] ?? [], 'total'));
+            $this->json(['success' => true, 'items' => $_SESSION['cart'] ?? [], 'total' => $total]);
+        }
+
+        // Dona mahsulot uchun butun son talab qilinadi
+        if (in_array(strtolower($product['birlik']), ['dona', 'piece', 'pcs', 'шт'], true) && (float)$quantity != (int)$quantity) {
+            $this->json(['error' => 'Dona birlikdagi mahsulot uchun butun miqdor kiriting'], 400);
+        }
+
+        if ((float)$product['miqdor'] < $quantity) {
+            $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . number_format($product['miqdor'], 3)]);
         }
 
         if (isset($_SESSION['cart'])) {
@@ -486,9 +554,23 @@ class PosController extends Controller
         }
 
         $naqd = floatval(str_replace(',', '', $_POST['closing_cash'] ?? '0'));
+        
+        // Smena summary olish
+        $summary = $this->posModel->getSmenaSummary($smena['id']);
+        $expected = $summary['expected_cash'] ?? 0;
+        $difference = $naqd - $expected;
 
         if ($this->posModel->closeSmena($smena['id'], $naqd)) {
-            $_SESSION['flash']['success'] = 'Smena muvaffaqiyatli yopildi';
+            $_SESSION['flash']['success'] = sprintf(
+                'Smena yopildi. Boshlang\'ich: %s, Naqd savdo: %s, Qaytarish: %s, Diller to\'lovlari: %s, Kutilgan: %s, Haqiqiy: %s, Farq: %s',
+                number_format($summary['ochilish_naqd'], 2),
+                number_format($summary['jami_naqd_tolov'] ?? 0, 2),
+                number_format($summary['qaytarilgan_summa'], 2),
+                number_format($summary['diller_tolovlari'], 2),
+                number_format($expected, 2),
+                number_format($naqd, 2),
+                number_format($difference, 2)
+            );
         } else {
             $_SESSION['flash']['error'] = 'Smena yopishda xatolik';
         }
@@ -538,15 +620,22 @@ class PosController extends Controller
 
         $slotId = (int)($_POST['slot_id'] ?? 0);
         $productId = (int)($_POST['product_id'] ?? 0);
-        $quantity = (int)($_POST['quantity'] ?? 1);
+        $quantity = floatval($_POST['quantity'] ?? 1);
+        $quantity = $this->normalizeQuantity($quantity, $product['birlik'] ?? null);
 
         $product = $this->productModel->find($productId);
         if (!$product) {
             $_SESSION['flash']['error'] = 'Mahsulot topilmadi';
             $this->redirect('pos');
         }
-        if ($product['miqdor'] < $quantity) {
-            $_SESSION['flash']['error'] = 'Mahsulot yetarli emas. Qoldiq: ' . $product['miqdor'];
+        // Dona mahsulotlar uchun butun miqdor talab qilinadi
+        if (in_array(strtolower($product['birlik']), ['dona', 'piece', 'pcs', 'шт'], true) && (float)$quantity != (int)$quantity) {
+            $_SESSION['flash']['error'] = 'Dona birlikdagi mahsulot uchun butun miqdor kiriting';
+            $this->redirect('pos');
+        }
+
+        if ((float)$product['miqdor'] < $quantity) {
+            $_SESSION['flash']['error'] = 'Mahsulot yetarli emas. Qoldiq: ' . number_format($product['miqdor'], 3);
             $this->redirect('pos');
         }
 
@@ -591,14 +680,22 @@ class PosController extends Controller
 
         $slotId = (int)($input['slot_id'] ?? 0);
         $productId = (int)($input['product_id'] ?? 0);
-        $quantity = (float)($input['quantity'] ?? 1);
+        $quantity = floatval($input['quantity'] ?? 1);
+
+        $product = $this->productModel->find($productId);
+        $quantity = $this->normalizeQuantity($quantity, $product['birlik'] ?? null);
 
         $product = $this->productModel->find($productId);
         if (!$product) {
             $this->json(['error' => 'Mahsulot topilmadi']);
         }
-        if ($product['miqdor'] < $quantity) {
-            $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . $product['miqdor']]);
+        // Dona mahsulotlar uchun butun miqdor talab qilinadi
+        if (in_array(strtolower($product['birlik']), ['dona', 'piece', 'pcs', 'шт'], true) && (float)$quantity != (int)$quantity) {
+            $this->json(['error' => 'Dona birlikdagi mahsulot uchun butun miqdor kiriting']);
+        }
+
+        if ((float)$product['miqdor'] < $quantity) {
+            $this->json(['error' => 'Mahsulot yetarli emas. Qoldiq: ' . number_format($product['miqdor'], 3)]);
         }
 
         if ($this->slotModel->updateQuantity($slotId, $productId, $quantity)) {

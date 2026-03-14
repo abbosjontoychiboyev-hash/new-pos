@@ -23,12 +23,13 @@ class Report extends Model {
                 SUM(s.yakuniy_summa) as sof_tushum,
                 SUM(s.tolangan_summa) as jami_tolov,
                 SUM(s.qarz_summa) as jami_qarz,
-                AVG(s.yakuniy_summa) as ortacha_chek
+                AVG(s.yakuniy_summa) as ortacha_chek,
+                (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE DATE(sana) = ?) as diller_tolovlari
             FROM savdolar s
             WHERE DATE(s.sotilgan_vaqt) = ? AND s.holat = 'YAKUNLANGAN'
             GROUP BY DATE(s.sotilgan_vaqt)
         ");
-        $stmt->execute([$date]);
+        $stmt->execute([$date, $date]);
         return $stmt->fetch();
     }
     
@@ -205,6 +206,79 @@ class Report extends Model {
             ORDER BY jami_qarz DESC
         ");
         $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Dillerlar / yetkazib beruvchilar hisobot
+     */
+    public function getDealerReport() {
+        $stmt = $this->db->prepare("
+            SELECT 
+                id,
+                nomi,
+                telefon,
+                qarz,
+                jami_olingan,
+                jami_tolangan,
+                oxirgi_olingan_sana,
+                oxirgi_tolov_sana
+            FROM yetkazib_beruvchilar
+            WHERE ochirilgan_vaqt IS NULL
+            ORDER BY qarz DESC
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Smеna hisobot
+     */
+    public function getShiftReport($startDate, $endDate) {
+        $stmt = $this->db->prepare("
+            SELECT 
+                k.*,
+                u.fio as kassir_fio,
+                (SELECT IFNULL(SUM(tolangan_summa), 0) FROM savdolar WHERE kassir_id = k.kassir_id AND DATE(sotilgan_vaqt) BETWEEN ? AND ? AND holat = 'YAKUNLANGAN' AND tolov_usuli = 'NAQD') as jami_naqd_tolov,
+                (SELECT IFNULL(SUM(summa), 0) FROM qaytarishlar q JOIN savdolar s ON q.savdo_id = s.id WHERE s.kassir_id = k.kassir_id AND DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ?) as qaytarilgan_summa,
+                (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE kiritgan_id = k.kassir_id AND DATE(sana) BETWEEN ? AND ?) as diller_tolovlari
+            FROM kassa_smenalari k
+            LEFT JOIN foydalanuvchilar u ON u.id = k.kassir_id
+            WHERE DATE(k.ochilgan_vaqt) BETWEEN ? AND ?
+            ORDER BY k.ochilgan_vaqt DESC
+        ");
+        $stmt->execute([$startDate, $endDate, $startDate, $endDate, $startDate, $endDate, $startDate, $endDate]);
+        $results = $stmt->fetchAll();
+
+        // Calculate expected cash per shift
+        foreach ($results as &$row) {
+            $row['expected_cash'] = ($row['ochilish_naqd'] ?? 0) + ($row['jami_naqd_tolov'] ?? 0) - ($row['qaytarilgan_summa'] ?? 0) - ($row['diller_tolovlari'] ?? 0);
+        }
+        unset($row);
+
+        return $results;
+    }
+
+    /**
+     * Qaytarishlar hisobot
+     */
+    public function getReturnReport($startDate, $endDate) {
+        $stmt = $this->db->prepare("
+            SELECT 
+                r.*, 
+                s.chek_raqami,
+                u.fio as kassir_fio,
+                m.fio as mijoz_fio,
+                p.nomi as mahsulot_nomi
+            FROM qaytarishlar r
+            LEFT JOIN savdolar s ON s.id = r.savdo_id
+            LEFT JOIN foydalanuvchilar u ON u.id = r.foydalanuvchi_id
+            LEFT JOIN mijozlar m ON m.id = s.mijoz_id
+            LEFT JOIN mahsulotlar p ON p.id = r.mahsulot_id
+            WHERE DATE(r.qaytarilgan_vaqt) BETWEEN ? AND ?
+            ORDER BY r.qaytarilgan_vaqt DESC
+        ");
+        $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
     

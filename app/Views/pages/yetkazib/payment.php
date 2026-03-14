@@ -34,7 +34,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">To‘lov summasi <span class="text-danger">*</span></label>
-                    <input type="text" name="summa" class="form-control" placeholder="0" value="<?= $diller['qarz'] ?>" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                    <input type="text" name="summa" class="form-control" placeholder="0" value="<?= $diller['qarz'] ?>" onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')" required>
                 </div>
 
                 <div class="mb-3">

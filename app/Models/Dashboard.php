@@ -86,6 +86,18 @@ class Dashboard extends Model {
         $stmt->execute();
         $stats['topCategories'] = $stmt->fetchAll();
         
+        // 6. Diller statistikasi
+        $stmt = $this->db->prepare("
+            SELECT 
+                IFNULL(SUM(jami_olingan), 0) as dillerlarga_berilgan,
+                IFNULL(SUM(jami_tolangan), 0) as dillerlardan_tushgan,
+                IFNULL(SUM(qarz), 0) as diller_qarzi
+            FROM yetkazib_beruvchilar
+            WHERE faol = 1
+        ");
+        $stmt->execute();
+        $stats['dealers'] = $stmt->fetch();
+        
         return $stats;
     }
     

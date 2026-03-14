@@ -48,6 +48,9 @@ return [
         'reports/cashiers' => ['ReportController', 'cashiers'],
         'reports/debtors' => ['ReportController', 'debtors'],
         'reports/categories' => ['ReportController', 'categories'],
+        'reports/dealers' => ['ReportController', 'dealers'],
+        'reports/shifts' => ['ReportController', 'shifts'],
+        'reports/returns' => ['ReportController', 'returns'],
         
         // Settings
         'settings' => ['SettingController', 'index'],

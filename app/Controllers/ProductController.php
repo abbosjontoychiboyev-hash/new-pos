@@ -157,10 +157,10 @@ class ProductController extends Controller {
             'kategoriya_id' => $_POST['kategoriya_id'],
             'subkategoriya_id' => !empty($_POST['subkategoriya_id']) ? $_POST['subkategoriya_id'] : null,
             'birlik' => $_POST['birlik'],
-            'kelish_narxi' => str_replace(',', '', $_POST['kelish_narxi']),
-            'sotish_narxi' => str_replace(',', '', $_POST['sotish_narxi']),
-            'miqdor' => $_POST['miqdor'] ?? 0,
-            'minimal_miqdor' => $_POST['minimal_miqdor'] ?? 0,
+            'kelish_narxi' => floatval(str_replace(',', '.', $_POST['kelish_narxi'])),
+            'sotish_narxi' => floatval(str_replace(',', '.', $_POST['sotish_narxi'])),
+            'miqdor' => floatval(str_replace(',', '.', $_POST['miqdor'] ?? 0)),
+            'minimal_miqdor' => floatval(str_replace(',', '.', $_POST['minimal_miqdor'] ?? 0)),
             'faol' => isset($_POST['faol']) ? 1 : 0
         ];
         
@@ -257,9 +257,9 @@ class ProductController extends Controller {
             'kategoriya_id' => $_POST['kategoriya_id'],
             'subkategoriya_id' => !empty($_POST['subkategoriya_id']) ? $_POST['subkategoriya_id'] : null,
             'birlik' => $_POST['birlik'],
-            'kelish_narxi' => str_replace(',', '', $_POST['kelish_narxi']),
-            'sotish_narxi' => str_replace(',', '', $_POST['sotish_narxi']),
-            'minimal_miqdor' => $_POST['minimal_miqdor'] ?? 0,
+            'kelish_narxi' => floatval(str_replace(',', '.', $_POST['kelish_narxi'])),
+            'sotish_narxi' => floatval(str_replace(',', '.', $_POST['sotish_narxi'])),
+            'minimal_miqdor' => floatval(str_replace(',', '.', $_POST['minimal_miqdor'] ?? 0)),
             'faol' => isset($_POST['faol']) ? 1 : 0
         ];
         

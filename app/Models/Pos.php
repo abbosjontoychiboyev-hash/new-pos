@@ -321,4 +321,28 @@ class Pos extends Model {
         ");
         return $stmt->execute([$naqd, $smenaId]);
     }
+    
+    /**
+     * Smena uchun savdo va to'lovlarni hisoblash
+     */
+    public function getSmenaSummary($smenaId) {
+        $stmt = $this->db->prepare("
+            SELECT 
+                ochilish_naqd,
+                (SELECT IFNULL(SUM(tolangan_summa), 0) FROM savdolar WHERE kassir_id = k.kassir_id AND sotilgan_vaqt BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW()) AND holat = 'YAKUNLANGAN' AND tolov_usuli = 'NAQD') as jami_naqd_tolov,
+                (SELECT IFNULL(SUM(summa), 0) FROM qaytarishlar q JOIN savdolar s ON q.savdo_id = s.id WHERE s.kassir_id = k.kassir_id AND q.qaytarilgan_vaqt BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW())) as qaytarilgan_summa,
+                (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE kiritgan_id = k.kassir_id AND sana BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW())) as diller_tolovlari
+            FROM kassa_smenalari k
+            WHERE k.id = ?
+        ");
+        $stmt->execute([$smenaId]);
+        $data = $stmt->fetch();
+        
+        if ($data) {
+            $expected = $data['ochilish_naqd'] + $data['jami_savdo'] - $data['qaytarilgan_summa'] - $data['diller_tolovlari'];
+            $data['expected_cash'] = $expected;
+        }
+        
+        return $data;
+    }
 }

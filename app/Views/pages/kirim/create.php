@@ -58,7 +58,7 @@
                             <input type="number" name="soni[]" class="form-control" placeholder="Soni" min="1" required>
                         </div>
                         <div class="col-md-3">
-                            <input type="text" name="kelish_narxi[]" class="form-control" placeholder="Kelish narxi" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                            <input type="text" name="kelish_narxi[]" class="form-control" placeholder="Kelish narxi" onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')" required>
                         </div>
                         <div class="col-md-2">
                             <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.product-row').remove()">

@@ -92,8 +92,9 @@ class KirimController extends Controller {
             // 2. Har bir mahsulotni kirim tarkibiga qo'shish va omborni yangilash
             for ($i = 0; $i < count($mahsulotlar); $i++) {
                 $mahsulotId = $mahsulotlar[$i];
-                $soni = intval($sonlar[$i] ?? 0);
-                $kelishNarxi = floatval(str_replace(',', '', $narxlar[$i] ?? 0));
+                $soni = floatval(str_replace(',', '.', $sonlar[$i] ?? 0));
+                $soni = round($soni, 3);
+                $kelishNarxi = floatval(str_replace(',', '.', $narxlar[$i] ?? 0));
 
                 if ($soni <= 0 || $kelishNarxi <= 0) continue;
 
@@ -252,8 +253,9 @@ class KirimController extends Controller {
             $tarkib = $stmt->fetchAll();
             
             foreach ($tarkib as $item) {
+                $soni = floatval($item['soni']);
                 $stmt = $this->db->prepare("UPDATE mahsulotlar SET miqdor = miqdor - ? WHERE id = ?");
-                $stmt->execute([$item['soni'], $item['mahsulot_id']]);
+                $stmt->execute([$soni, $item['mahsulot_id']]);
             }
             
             // Diller qarzini kamaytirish (agar kerak bo'lsa)

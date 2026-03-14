@@ -409,7 +409,7 @@
 
         .products-section,
         .cart-section {
-            height: auto;
+            /* height: auto; */
             position: static;
         }
 
@@ -540,7 +540,7 @@
                     </div>
                     <div class="col-5">
                         <input type="text" id="discountValue" class="form-control" placeholder="0" value="0"
-                            onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); calculateDiscount()">
+                            onkeyup="this.value = this.value.replace(/[^0-9\.]/g, ''); calculateDiscount()">
                     </div>
                     <div class="col-3">
                         <button class="btn btn-outline-danger w-100" onclick="clearDiscount()">
@@ -593,7 +593,7 @@
 
             <div class="paid-amount mb-3">
                 <input type="text" id="paidAmount" class="form-control" placeholder="To‘langan summa" value="<?= $subtotal ?? 0 ?>"
-                    onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); calculateChange()">
+                    onkeyup="this.value = this.value.replace(/[^0-9\.]/g, ''); calculateChange()">
             </div>
 
             <div class="change-amount mb-3" id="changeAmount" style="display:none;">
@@ -624,7 +624,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Boshlang'ich naqd pul</label>
-                        <input type="text" name="opening_cash" class="form-control" value="0" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        <input type="text" name="opening_cash" class="form-control" value="0" onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -649,7 +649,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Yakuniy naqd pul</label>
-                        <input type="text" name="closing_cash" class="form-control" value="0" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        <input type="text" name="closing_cash" class="form-control" value="0" onkeyup="this.value = this.value.replace(/[^0-9\.]/g, '')" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -706,6 +706,9 @@ function addToCart(productId) {
     .then(data => {
         if (data && data.success) {
             renderCart(data);
+            // Clear search input and focus after adding to cart
+            document.getElementById('searchProduct').value = '';
+            document.getElementById('searchProduct').focus();
         } else if (data && data.error) {
             alert(data.error);
         } else {
@@ -719,6 +722,17 @@ function addToCart(productId) {
 }
 
 function updateCartItem(productId, quantity) {
+    quantity = parseFloat(quantity);
+    if (isNaN(quantity)) {
+        alert('Iltimos, to\'g\'ri miqdor kiriting');
+        refreshCart();
+        return;
+    }
+    if (quantity <= 0) {
+        // 0 kiritilganda mahsulotni olib tashlaymiz
+        removeFromCart(productId);
+        return;
+    }
     fetch(apiPath('/pos/update-cart'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -806,7 +820,7 @@ function renderCart(data) {
                 <span class="cart-product-sku">${item.barcode || ''}</span>
             </td>
             <td>
-                <input type="number" class="cart-qty-input" value="${item.quantity}" min="1" max="${item.stock}" step="any" onchange="updateCartItem(${item.id}, this.value)">
+                <input type="number" class="cart-qty-input" value="${item.quantity}" min="0" max="${item.stock}" step="${(item.unit || '').toLowerCase() === 'kg' || (item.unit || '').toLowerCase() === 'litr' ? '0.001' : '1'}" onchange="updateCartItem(${item.id}, this.value)">
                 <i class="fas fa-trash cart-remove" onclick="removeFromCart(${item.id})"></i>
             </td>
             <td class="cart-price">${numberFormat(item.price)} so‘m</td>
@@ -829,7 +843,7 @@ function escapeHtml(unsafe) { return (unsafe||'').replace(/[&<>"]/g, function(m)
 // ================== CHEGIRMA ==================
 function calculateDiscount() {
     const discountType = document.getElementById('discountType').value;
-    const discountValue = parseFloat(document.getElementById('discountValue').value.replace(/[^0-9]/g, '')) || 0;
+    const discountValue = parseFloat(document.getElementById('discountValue').value.replace(/[^0-9\.]/g, '')) || 0;
     let discountAmount = 0;
     if (discountType === 'percent' && discountValue > 0) {
         discountAmount = (subtotal * discountValue) / 100;
@@ -872,8 +886,8 @@ function selectPaymentMethod(method) {
 }
 
 function calculateChange() {
-    const total = parseFloat(document.getElementById('cartTotal').textContent.replace(/[^0-9]/g, '')) || 0;
-    const paid = parseFloat(document.getElementById('paidAmount').value.replace(/[^0-9]/g, '')) || 0;
+    const total = parseFloat(document.getElementById('cartTotal').textContent.replace(/[^0-9\.]/g, '')) || 0;
+    const paid = parseFloat(document.getElementById('paidAmount').value.replace(/[^0-9\.]/g, '')) || 0;
     if (paid >= total) {
         const change = paid - total;
         document.getElementById('changeValue').textContent = change.toLocaleString() + ' so‘m';
@@ -889,8 +903,8 @@ function checkout() {
         alert('Savat bo‘sh');
         return;
     }
-    const total = parseFloat(document.getElementById('cartTotal').textContent.replace(/[^0-9]/g, '')) || 0;
-    const paid = parseFloat(document.getElementById('paidAmount').value.replace(/[^0-9]/g, '')) || 0;
+    const total = parseFloat(document.getElementById('cartTotal').textContent.replace(/[^0-9\.]/g, '')) || 0;
+    const paid = parseFloat(document.getElementById('paidAmount').value.replace(/[^0-9\.]/g, '')) || 0;
     const customerId = document.getElementById('customerId').value;
     const note = document.getElementById('note').value;
     const discountType = document.getElementById('discountType').value;
@@ -995,7 +1009,14 @@ document.addEventListener('keypress', e => {
                 products.forEach(p => {
                     if (p.querySelector('.barcode').textContent === barcodeBuffer) {
                         found = true;
-                        if (!p.classList.contains('out-of-stock')) addToCart(p.dataset.id);
+                        if (!p.classList.contains('out-of-stock')) {
+                            const searchEl = document.getElementById('searchProduct');
+                            if (searchEl) {
+                                searchEl.value = '';
+                                searchEl.focus();
+                            }
+                            addToCart(p.dataset.id);
+                        }
                     }
                 });
                 if (!found) alert('Mahsulot topilmadi: ' + barcodeBuffer);
@@ -1010,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateChange();
     document.getElementById('searchProduct').focus();
     const totalEl = document.getElementById('cartTotal');
-    if (totalEl) subtotal = parseFloat(totalEl.textContent.replace(/[^0-9]/g, '')) || 0;
+    if (totalEl) subtotal = parseFloat(totalEl.textContent.replace(/[^0-9\.]/g, '')) || 0;
 });
 </script>
 <?php $extraJs = ob_get_clean(); ?>

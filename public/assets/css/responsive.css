@@ -23,6 +23,7 @@
     }
     
     .pos-container {
+        /* height: 1250px; */
         grid-template-columns: 1fr;
     }
     

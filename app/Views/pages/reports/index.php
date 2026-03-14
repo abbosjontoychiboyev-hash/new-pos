@@ -222,6 +222,9 @@
     <a href="/new-pos/reports/top-products" class="btn btn-info"><i class="fas fa-chart-bar"></i> Top mahsulotlar</a>
     <a href="/new-pos/reports/cashiers" class="btn btn-warning"><i class="fas fa-users"></i> Kassirlar</a>
     <a href="/new-pos/reports/debtors" class="btn btn-danger"><i class="fas fa-credit-card"></i> Qarzdorlar</a>
+    <a href="/new-pos/reports/dealers" class="btn btn-secondary"><i class="fas fa-truck"></i> Yetkazib beruvchilar</a>
+    <a href="/new-pos/reports/shifts" class="btn btn-dark"><i class="fas fa-stopwatch"></i> Smena</a>
+    <a href="/new-pos/reports/returns" class="btn btn-info"><i class="fas fa-undo-alt"></i> Qaytarishlar</a>
 </div>
 
 <!-- Statistics -->

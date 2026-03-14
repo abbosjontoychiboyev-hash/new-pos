@@ -196,8 +196,8 @@
     
     // Calculate profit
     function calculateProfit() {
-        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9]/g, '')) || 0;
-        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9]/g, '')) || 0;
+        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
+        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
         
         if (kelish > 0 && sotish > 0) {
             let foyda = sotish - kelish;
@@ -232,8 +232,8 @@
     
     // Form submit validation
     document.getElementById('productForm')?.addEventListener('submit', function(e) {
-        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9]/g, '')) || 0;
-        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9]/g, '')) || 0;
+        let kelish = parseFloat(document.getElementById('kelish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
+        let sotish = parseFloat(document.getElementById('sotish_narxi').value.replace(/[^0-9\.]/g, '')) || 0;
         
         if (sotish < kelish) {
             if (!confirm('Sotish narxi kelish narxidan past. Davom etishni xohlaysizmi?')) {
@@ -462,7 +462,7 @@
                            name="kelish_narxi" 
                            value="<?= isset($_SESSION['old']['kelish_narxi']) ? $_SESSION['old']['kelish_narxi'] : number_format($product['kelish_narxi'] ?? 0, 0, '', '') ?>"
                            placeholder="0"
-                           onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); calculateProfit();"
+                           onkeyup="this.value = this.value.replace(/[^0-9\.]/g, ''); calculateProfit();"
                            required>
                     <span class="input-group-text">so'm</span>
                 </div>
@@ -485,7 +485,7 @@
                            name="sotish_narxi" 
                            value="<?= isset($_SESSION['old']['sotish_narxi']) ? $_SESSION['old']['sotish_narxi'] : number_format($product['sotish_narxi'] ?? 0, 0, '', '') ?>"
                            placeholder="0"
-                           onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); calculateProfit();"
+                           onkeyup="this.value = this.value.replace(/[^0-9\.]/g, ''); calculateProfit();"
                            required>
                     <span class="input-group-text">so'm</span>
                 </div>
