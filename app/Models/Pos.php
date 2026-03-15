@@ -325,24 +325,50 @@ class Pos extends Model {
     /**
      * Smena uchun savdo va to'lovlarni hisoblash
      */
-    public function getSmenaSummary($smenaId) {
+/**
+ * Smena xulosasini olish (savdo, qaytarish, tushum va h.k.)
+ */
+public function getSmenaSummary($smenaId)
+{
+    // 1. Smenadagi barcha savdolar
+    $stmt = $this->db->prepare("
+        SELECT 
+            COUNT(*) as savdolar_soni,
+            IFNULL(SUM(yakuniy_summa), 0) as jami_savdo,
+            IFNULL(SUM(tolangan_summa), 0) as jami_tolov,
+            IFNULL(SUM(qarz_summa), 0) as jami_qarz
+        FROM savdolar
+        WHERE kassa_smena_id = ? AND holat = 'YAKUNLANGAN'
+    ");
+    $stmt->execute([$smenaId]);
+    $sales = $stmt->fetch();
+
+    // 2. Smenadagi qaytarishlar (agar jadval mavjud bo'lsa)
+    try {
         $stmt = $this->db->prepare("
             SELECT 
-                ochilish_naqd,
-                (SELECT IFNULL(SUM(tolangan_summa), 0) FROM savdolar WHERE kassir_id = k.kassir_id AND sotilgan_vaqt BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW()) AND holat = 'YAKUNLANGAN' AND tolov_usuli = 'NAQD') as jami_naqd_tolov,
-                (SELECT IFNULL(SUM(summa), 0) FROM qaytarishlar q JOIN savdolar s ON q.savdo_id = s.id WHERE s.kassir_id = k.kassir_id AND q.qaytarilgan_vaqt BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW())) as qaytarilgan_summa,
-                (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE kiritgan_id = k.kassir_id AND sana BETWEEN k.ochilgan_vaqt AND COALESCE(k.yopilgan_vaqt, NOW())) as diller_tolovlari
-            FROM kassa_smenalari k
-            WHERE k.id = ?
+                COUNT(*) as qaytarishlar_soni,
+                IFNULL(SUM(summa), 0) as jami_qaytarilgan
+            FROM qaytarishlar
+            WHERE foydalanuvchi_id = ? AND DATE(qaytarilgan_vaqt) = (
+                SELECT DATE(ochilgan_vaqt) FROM kassa_smenalari WHERE id = ?
+            )
         ");
-        $stmt->execute([$smenaId]);
-        $data = $stmt->fetch();
-        
-        if ($data) {
-            $expected = $data['ochilish_naqd'] + $data['jami_savdo'] - $data['qaytarilgan_summa'] - $data['diller_tolovlari'];
-            $data['expected_cash'] = $expected;
-        }
-        
-        return $data;
+        $stmt->execute([$_SESSION['user_id'], $smenaId]);
+        $returns = $stmt->fetch();
+    } catch (\PDOException $e) {
+        // Agar qaytarishlar jadvali bo'lmasa, xatolikni logga yozib, bo'sh qiymatlar qaytaramiz
+        error_log("Qaytarishlar jadvali mavjud emas: " . $e->getMessage());
+        $returns = ['qaytarishlar_soni' => 0, 'jami_qaytarilgan' => 0];
     }
+
+    return [
+        'savdolar_soni' => $sales['savdolar_soni'] ?? 0,
+        'jami_savdo' => $sales['jami_savdo'] ?? 0,
+        'jami_tolov' => $sales['jami_tolov'] ?? 0,
+        'jami_qarz' => $sales['jami_qarz'] ?? 0,
+        'qaytarishlar_soni' => $returns['qaytarishlar_soni'] ?? 0,
+        'jami_qaytarilgan' => $returns['jami_qaytarilgan'] ?? 0
+    ];
+}
 }

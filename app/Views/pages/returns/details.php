@@ -210,12 +210,13 @@
         const row = checkbox.closest('tr');
         const quantityInput = row.querySelector('.return-quantity');
         const price = parseFloat(checkbox.dataset.price);
-        const maxQty = parseInt(checkbox.dataset.max);
+        const maxQty = parseFloat(checkbox.dataset.max);
         
         if (checkbox.checked) {
             quantityInput.disabled = false;
-            quantityInput.value = 1;
-            if (quantityInput.value > maxQty) quantityInput.value = maxQty;
+            const defaultQty = Math.min(1, maxQty);
+            quantityInput.value = defaultQty;
+            if (parseFloat(quantityInput.value) > maxQty) quantityInput.value = maxQty;
         } else {
             quantityInput.disabled = true;
             quantityInput.value = 0;
@@ -230,7 +231,7 @@
         
         rows.forEach(row => {
             const checkbox = row.querySelector('.return-checkbox');
-            const quantity = parseInt(row.querySelector('.return-quantity').value) || 0;
+            const quantity = parseFloat(row.querySelector('.return-quantity').value) || 0;
             
             if (checkbox && checkbox.checked && quantity > 0) {
                 const price = parseFloat(checkbox.dataset.price);
@@ -268,7 +269,7 @@
             let hasQuantity = false;
             checkboxes.forEach(cb => {
                 const row = cb.closest('tr');
-                const qty = parseInt(row.querySelector('.return-quantity').value) || 0;
+                const qty = parseFloat(row.querySelector('.return-quantity').value) || 0;
                 if (qty > 0) hasQuantity = true;
             });
             
@@ -416,8 +417,6 @@ if ($daysDiff > 7):
                     <tr class="product-row" data-id="<?= $item['id'] ?>">
                         <td class="text-center">
                             <input type="checkbox" 
-                                   name="items[]" 
-                                   value="<?= $item['id'] ?>" 
                                    class="return-checkbox"
                                    data-price="<?= $item['birlik_narx'] - $item['chegirma'] ?>"
                                    data-max="<?= $maxReturn ?>"
@@ -431,10 +430,11 @@ if ($daysDiff > 7):
                         <td><?= $item['soni'] ?> <?= $item['birlik'] ?></td>
                         <td>
                             <input type="number" 
-                                   name="quantities[<?= $item['id'] ?>]" 
+                                   name="return_items[<?= $item['id'] ?>]" 
                                    class="return-quantity" 
                                    min="0" 
                                    max="<?= $maxReturn ?>"
+                                   step="any"
                                    value="0"
                                    disabled
                                    onchange="calculateTotal()">

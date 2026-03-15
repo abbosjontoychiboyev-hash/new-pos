@@ -55,7 +55,13 @@ return [
         // Settings
         'settings' => ['SettingController', 'index'],
         'settings/users' => ['UserController', 'index'],
+        'settings/users/create' => ['UserController', 'create'],
+        'settings/users/edit/{id}' => ['UserController', 'edit'],
+        'settings/users/show/{id}' => ['UserController', 'show'],
         'settings/roles' => ['RoleController', 'index'],
+        'settings/roles/create' => ['RoleController', 'create'],
+        'settings/roles/edit/{id}' => ['RoleController', 'edit'],
+        'settings/roles/show/{id}' => ['RoleController', 'show'],
         
         // API routes (AJAX)
         'api/products/search' => ['ApiController', 'searchProducts'],
@@ -69,7 +75,6 @@ return [
         'debt/customer/{id}' => ['DebtController', 'customer'],
         'debt/payment/{id}' => ['DebtController', 'payment'],
         // Settings
-        'settings' => ['SettingController', 'index'],
         'settings/company' => ['SettingController', 'company'],
         'settings/currency' => ['SettingController', 'currency'],
         'settings/pos' => ['SettingController', 'pos'],
@@ -92,7 +97,6 @@ return [
         'yetkazib/edit/{id}' => ['YetkazibBeruvchiController', 'edit'],
         'yetkazib/add-payment/{id}' => ['YetkazibBeruvchiController', 'addPayment'],
         'yetkazib/show/{id}' => ['YetkazibBeruvchiController', 'show'],
-        'yetkazib/add-payment/{id}' => ['YetkazibBeruvchiController', 'addPayment'],
 
         //Kirim 
         'kirim' => ['KirimController', 'index'],
@@ -145,13 +149,11 @@ return [
         'settings/users/store' => ['UserController', 'store'],
         'settings/users/update/{id}' => ['UserController', 'update'],
         'settings/users/delete/{id}' => ['UserController', 'delete'],
+        'settings/roles/store' => ['RoleController', 'store'],
+        'settings/roles/update/{id}' => ['RoleController', 'update'],
+        'settings/roles/delete/{id}' => ['RoleController', 'delete'],
         // Settings
         'settings/company/save' => ['SettingController', 'saveCompany'],
-        'settings/currency/save' => ['SettingController', 'saveCurrency'],
-        'settings/pos/save' => ['SettingController', 'savePos'],
-        'settings/users/store' => ['SettingController', 'userStore'],
-        'settings/users/update/{id}' => ['SettingController', 'userUpdate'],
-        'settings/users/delete/{id}' => ['SettingController', 'userDelete'],
         'settings/profile/update' => ['SettingController', 'profileUpdate'],
         
         // nasiya debt

@@ -81,6 +81,52 @@
     .stat-value {
         font-size: 24px;
     }
+    
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .tables-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .pos-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .cart-section {
+        position: static;
+        margin-top: 20px;
+    }
+    
+    .category-tabs {
+        gap: 5px;
+    }
+    
+    .category-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .shift-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .shift-actions {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Mobile Landscape (576px to 767px) */
@@ -159,6 +205,29 @@
         width: 100%;
         justify-content: center;
     }
+    
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .tables-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .pos-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .cart-section {
+        position: static;
+        margin-top: 20px;
+    }
+    
+    .receipt {
+        margin: 10px;
+        padding: 15px;
+    }
 }
 
 /* Mobile Portrait (up to 575px) */
@@ -198,6 +267,139 @@
     }
     
     .chart-card {
+        padding: 15px;
+    }
+    
+    .table-card {
+        padding: 15px;
+    }
+    
+    .category-tabs {
+        gap: 5px;
+    }
+    
+    .category-tab {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-card .barcode {
+        font-size: 9px;
+    }
+    
+    .product-card .name {
+        font-size: 13px;
+    }
+    
+    .cart-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .cart-clear {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .footer {
+        font-size: 11px;
+        padding: 15px;
+    }
+    
+    .receipt {
+        margin: 5px;
+        padding: 10px;
+    }
+    
+    .receipt-title {
+        font-size: 16px;
+    }
+    
+    .shift-info {
+        padding: 15px;
+    }
+    
+    .shift-label {
+        font-size: 14px;
+    }
+}
+
+/* Small Mobile (up to 400px) */
+@media (max-width: 400px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .btn-action {
+        padding: 3px 6px;
+    }
+    
+    .badge {
+        padding: 3px 6px;
+        font-size: 10px;
+    }
+    
+    .receipt {
+        margin: 2px;
+        padding: 8px;
+    }
+    
+    .receipt-item {
+        font-size: 12px;
+    }
+    
+    .receipt-total {
+        font-size: 14px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .top-bar,
+    .footer,
+    .btn,
+    .modal,
+    .alert,
+    .shift-actions,
+    .view-all,
+    .cart-clear,
+    .checkout-btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 0;
+    }
+    
+    .wrapper {
+        display: block;
+    }
+    
+    .card,
+    .table-card,
+    .chart-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
         padding: 15px;
     }
     

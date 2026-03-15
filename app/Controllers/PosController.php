@@ -300,6 +300,26 @@ class PosController extends Controller
     }
 
     /**
+     * Savat sahifasi
+     */
+    public function cart() {
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect('login');
+        }
+
+        $cart = $_SESSION['cart'] ?? [];
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['total'];
+        }
+
+        $this->view('pos/cart', [
+            'cart' => $cart,
+            'total' => $total
+        ]);
+    }
+
+    /**
      * Savatni ko'rish (AJAX)
      */
     public function viewCart()

@@ -13,9 +13,9 @@ define('ROUTES_PATH', ROOT_PATH . '/routes');
 define('STORAGE_PATH', ROOT_PATH . '/storage');
 define('UPLOAD_PATH', PUBLIC_PATH . '/uploads');
 
-// BASE_URL - loyiha joylashgan papka
-define('BASE_URL', 'http://localhost:8000');
-define('BASE_PATH', '/new-pos'); // MUHIM: loyiha papkangiz nomi
+// Environment-based URLs
+define('BASE_URL', getenv('APP_URL') ?: 'http://localhost:8000');
+define('BASE_PATH', getenv('APP_BASE_PATH') ?: '/new-pos'); // Loyiha papkasi nomi
 
 // Xavfsizlik
 define('BCRYPT_COST', 12);

@@ -2,7 +2,7 @@
 <?php $title = 'POS - Savdo'; ?>
 
 <!-- Extra CSS -->
-<?php ob_start(); ?>
+<?php $extraCss = ''; ?>
 <style>
     .pos-container {
         display: grid;
@@ -140,7 +140,7 @@
         padding: 16px;
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 150px);
+        height: calc(100vh - 50px);
         position: sticky;
         top: 10px;
         overflow: hidden;
@@ -418,7 +418,7 @@
         }
     }
 </style>
-<?php $extraCss = ob_get_clean(); ?>
+<?php $extraCss = ''; ?>
 
 <!-- Page Content -->
 <?php if (!$smena): ?>

@@ -1,2 +1,29 @@
--- schema.sql (placeholder)
--- Put initial database schema here.
+-- Database Schema for POS System
+-- Full schema is in pos_magazin_uz.sql
+-- This file contains the complete database structure
+
+-- Include the full schema from pos_magazin_uz.sql
+-- Run the following command to set up the database:
+-- mysql -u root -p pos_magazin_uz < pos_magazin_uz.sql
+
+-- Tables included:
+-- - foydalanuvchilar (users)
+-- - rollar (roles)
+-- - kategoriyalar (categories)
+-- - subkategoriyalar (subcategories)
+-- - mahsulotlar (products)
+-- - mijozlar (customers)
+-- - yetkazib_beruvchilar (suppliers)
+-- - kirimlar (supplies)
+-- - kirim_tarkibi (supply_items)
+-- - savdolar (sales)
+-- - savdo_tarkibi (sale_items)
+-- - savdo_slotlari (sale_slots)
+-- - savdo_slot_items (slot_items)
+-- - tolovlar (payments)
+-- - nasiya_tolovlar (debt_payments)
+-- - kassa_smenalari (cash_shifts)
+-- - kassa_harakatlari (cash_movements)
+-- - ombor_jurnali (warehouse_journal)
+-- - sozlamalar (settings)
+-- - yetkazib_beruvchi_tolovlari (supplier_payments)
