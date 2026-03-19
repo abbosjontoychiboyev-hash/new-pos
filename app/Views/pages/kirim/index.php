@@ -28,7 +28,7 @@
                     <tr>
                         <td>#<?= $k['id'] ?></td>
                         <td><?= date('d.m.Y H:i', strtotime($k['kirim_vaqt'])) ?></td>
-                        <td><?= htmlspecialchars($k['yetkazib_nomi'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($k['yetkazib_beruvchi_nomi'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($k['kiritgan_fio'] ?? '-') ?></td>
                         <td><?= number_format($k['umumiy_summa'], 0, ',', ' ') ?> so'm</td>
                         <td>
@@ -42,7 +42,7 @@
                         </td>
                         <td><?= htmlspecialchars($k['izoh'] ?? '-') ?></td>
                         <td>
-                            <a href="/new-pos/kirim/view/<?= $k['id'] ?>" class="btn btn-sm btn-info">
+                            <a href="/new-pos/kirim/show/<?= $k['id'] ?>" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i> Ko'rish
                             </a>
                         </td>

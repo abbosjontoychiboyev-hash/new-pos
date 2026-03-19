@@ -42,7 +42,9 @@ return [
         // Reports
         'reports' => ['ReportController', 'index'],
         'reports/daily' => ['ReportController', 'daily'],
+        'reports/weekly' => ['ReportController', 'weekly'],
         'reports/monthly' => ['ReportController', 'monthly'],
+        'reports/print' => ['ReportController', 'print'],
         'reports/profit' => ['ReportController', 'profit'],
         'reports/top-products' => ['ReportController', 'topProducts'],
         'reports/cashiers' => ['ReportController', 'cashiers'],
@@ -51,6 +53,11 @@ return [
         'reports/dealers' => ['ReportController', 'dealers'],
         'reports/shifts' => ['ReportController', 'shifts'],
         'reports/returns' => ['ReportController', 'returns'],
+        'reports/export-excel/{type}' => ['ReportController', 'exportExcel'],
+        'reports/export-pdf/{type}' => ['ReportController', 'exportPdf'],
+        'reports/export-pdf/daily' => ['ReportController', 'exportDailyPdf'],
+        'reports/export-pdf/weekly' => ['ReportController', 'exportWeeklyPdf'],
+        'reports/export-pdf/monthly' => ['ReportController', 'exportMonthlyPdf'],
         
         // Settings
         'settings' => ['SettingController', 'index'],
@@ -101,7 +108,9 @@ return [
         //Kirim 
         'kirim' => ['KirimController', 'index'],
         'kirim/create' => ['KirimController', 'create'],
+        // `view` is an alias used in templates; it should work the same as `show`.
         'kirim/show/{id}' => ['KirimController', 'show'],  // view -> show
+        'kirim/view/{id}' => ['KirimController', 'show'],
         'kirim/edit/{id}' => ['KirimController', 'edit'],
             
     ],
@@ -143,6 +152,10 @@ return [
         // Reports export
         'reports/export-excel/{type}' => ['ReportController', 'exportExcel'],
         'reports/export-pdf/{type}' => ['ReportController', 'exportPdf'],
+        'reports/export-pdf/daily' => ['ReportController', 'exportDailyPdf'],
+        'reports/export-pdf/weekly' => ['ReportController', 'exportWeeklyPdf'],
+        'reports/export-pdf/monthly' => ['ReportController', 'exportMonthlyPdf'],
+        'reports/print/{type}' => ['ReportController', 'printReport'],
         
         // Settings
         'settings/update' => ['SettingController', 'update'],

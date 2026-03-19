@@ -14,7 +14,7 @@
                 <strong>Sana:</strong> <?= date('d.m.Y H:i', strtotime($kirim['kirim_vaqt'])) ?>
             </div>
             <div class="col-md-3">
-                <strong>Yetkazib beruvchi:</strong> <?= htmlspecialchars($kirim['yetkazib_nomi'] ?? '-') ?>
+                <strong>Yetkazib beruvchi:</strong> <?= htmlspecialchars($kirim['yetkazib_beruvchi_nomi'] ?? '-') ?>
             </div>
             <div class="col-md-3">
                 <strong>Kiritgan:</strong> <?= htmlspecialchars($kirim['kiritgan_fio'] ?? '-') ?>
