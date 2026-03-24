@@ -8,98 +8,143 @@ class Dashboard extends Model {
     /**
      * Asosiy statistik ma'lumotlar
      */
-    public function getStats() {
-        $today = date('Y-m-d');
-        $startOfMonth = date('Y-m-01');
-        $endOfMonth = date('Y-m-t');
-        
-        $stats = [];
-        
-        // 1. Bugungi statistika
-        $stmt = $this->db->prepare("
-            SELECT 
-                COUNT(*) as bugungi_savdolar,
-                IFNULL(SUM(yakuniy_summa), 0) as bugungi_tushum,
-                IFNULL(SUM(qarz_summa), 0) as bugungi_qarz,
-                COUNT(DISTINCT kassir_id) as faol_kassirlar
-            FROM savdolar 
-            WHERE DATE(sotilgan_vaqt) = ? AND holat = 'YAKUNLANGAN'
-        ");
-        $stmt->execute([$today]);
-        $stats['today'] = $stmt->fetch();
-        
-        // 2. Oylik statistika
-        $stmt = $this->db->prepare("
-            SELECT 
-                COUNT(*) as oylik_savdolar,
-                IFNULL(SUM(yakuniy_summa), 0) as oylik_tushum,
-                IFNULL(SUM(qarz_summa), 0) as oylik_qarz,
-                IFNULL(AVG(yakuniy_summa), 0) as ortacha_chek
-            FROM savdolar 
-            WHERE DATE(sotilgan_vaqt) BETWEEN ? AND ? AND holat = 'YAKUNLANGAN'
-        ");
-        $stmt->execute([$startOfMonth, $endOfMonth]);
-        $stats['monthly'] = $stmt->fetch();
-        
-        // 3. Jami statistika
-        $stmt = $this->db->query("
-            SELECT 
-                COUNT(*) as jami_savdolar,
-                IFNULL(SUM(yakuniy_summa), 0) as jami_tushum,
-                IFNULL(SUM(qarz_summa), 0) as jami_qarz,
-                COUNT(DISTINCT kassir_id) as jami_kassirlar
-            FROM savdolar 
-            WHERE holat = 'YAKUNLANGAN'
-        ");
-        $stats['total'] = $stmt->fetch();
-        
-        // 4. Oxirgi 7 kunlik savdo (grafik uchun)
-        $stmt = $this->db->prepare("
-            SELECT 
-                DATE(sotilgan_vaqt) as sana,
-                COUNT(*) as savdolar_soni,
-                SUM(yakuniy_summa) as kunlik_summa
-            FROM savdolar 
-            WHERE sotilgan_vaqt >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
-                AND holat = 'YAKUNLANGAN'
-            GROUP BY DATE(sotilgan_vaqt)
-            ORDER BY sana ASC
-        ");
-        $stmt->execute();
-        $stats['weekly'] = $stmt->fetchAll();
-        
-        // 5. Top kategoriyalar
-        $stmt = $this->db->query("
-            SELECT 
-                k.nomi,
-                COUNT(DISTINCT s.id) as savdolar_soni,
-                SUM(st.soni) as sotilgan_soni,
-                SUM(st.qator_summa) as jami_summa
-            FROM kategoriyalar k
-            LEFT JOIN mahsulotlar p ON k.id = p.kategoriya_id
-            LEFT JOIN savdo_tarkibi st ON p.id = st.mahsulot_id
-            LEFT JOIN savdolar s ON st.savdo_id = s.id AND s.holat = 'YAKUNLANGAN'
-            GROUP BY k.id
-            ORDER BY jami_summa DESC
-            LIMIT 5
-        ");
-        $stmt->execute();
-        $stats['topCategories'] = $stmt->fetchAll();
-        
-        // 6. Diller statistikasi
-        $stmt = $this->db->prepare("
-            SELECT 
-                IFNULL(SUM(jami_olingan), 0) as dillerlarga_berilgan,
-                IFNULL(SUM(jami_tolangan), 0) as dillerlardan_tushgan,
-                IFNULL(SUM(qarz), 0) as diller_qarzi
-            FROM yetkazib_beruvchilar
-            WHERE faol = 1
-        ");
-        $stmt->execute();
-        $stats['dealers'] = $stmt->fetch();
-        
-        return $stats;
+/**
+ * Asosiy statistik ma'lumotlar (qaytarishlar bilan)
+ */
+public function getStats() {
+    $today = date('Y-m-d');
+    $startOfMonth = date('Y-m-01');
+    $endOfMonth = date('Y-m-t');
+    
+    $stats = [];
+    
+    // 1. Bugungi statistika (savdo + qaytarish)
+    $stmt = $this->db->prepare("
+        SELECT 
+            COUNT(*) as bugungi_savdolar,
+            IFNULL(SUM(yakuniy_summa), 0) as bugungi_tushum,
+            IFNULL(SUM(qarz_summa), 0) as bugungi_qarz,
+            COUNT(DISTINCT kassir_id) as faol_kassirlar
+        FROM savdolar 
+        WHERE DATE(sotilgan_vaqt) = ? AND holat = 'YAKUNLANGAN'
+    ");
+    $stmt->execute([$today]);
+    $salesToday = $stmt->fetch();
+    
+    // Bugungi qaytarishlar
+    $returnsToday = $this->getReturnsTotal($today, $today);
+    
+    $stats['today'] = [
+        'savdolar_soni' => $salesToday['bugungi_savdolar'],
+        'jami_savdo'    => $salesToday['bugungi_tushum'],
+        'jami_qaytarish'=> $returnsToday,
+        'net_sales'     => $salesToday['bugungi_tushum'] - $returnsToday,
+        'jami_qarz'     => $salesToday['bugungi_qarz'],
+        'faol_kassirlar'=> $salesToday['faol_kassirlar']
+    ];
+    
+    // 2. Oylik statistika
+    $stmt = $this->db->prepare("
+        SELECT 
+            COUNT(*) as oylik_savdolar,
+            IFNULL(SUM(yakuniy_summa), 0) as oylik_tushum,
+            IFNULL(SUM(qarz_summa), 0) as oylik_qarz,
+            IFNULL(AVG(yakuniy_summa), 0) as ortacha_chek
+        FROM savdolar 
+        WHERE DATE(sotilgan_vaqt) BETWEEN ? AND ? AND holat = 'YAKUNLANGAN'
+    ");
+    $stmt->execute([$startOfMonth, $endOfMonth]);
+    $salesMonth = $stmt->fetch();
+    
+    $returnsMonth = $this->getReturnsTotal($startOfMonth, $endOfMonth);
+    
+    $stats['monthly'] = [
+        'savdolar_soni' => $salesMonth['oylik_savdolar'],
+        'jami_savdo'    => $salesMonth['oylik_tushum'],
+        'jami_qaytarish'=> $returnsMonth,
+        'net_sales'     => $salesMonth['oylik_tushum'] - $returnsMonth,
+        'jami_qarz'     => $salesMonth['oylik_qarz'],
+        'ortacha_chek'  => $salesMonth['ortacha_chek']
+    ];
+    
+    // 3. Jami statistika
+    $stmt = $this->db->query("
+        SELECT 
+            COUNT(*) as jami_savdolar,
+            IFNULL(SUM(yakuniy_summa), 0) as jami_tushum,
+            IFNULL(SUM(qarz_summa), 0) as jami_qarz,
+            COUNT(DISTINCT kassir_id) as jami_kassirlar
+        FROM savdolar 
+        WHERE holat = 'YAKUNLANGAN'
+    ");
+    $totalSales = $stmt->fetch();
+    
+    // Jami qaytarishlar
+    $totalReturns = $this->getReturnsTotal(); // butun vaqt oraligʻi
+    
+    $stats['total'] = [
+        'jami_savdolar' => $totalSales['jami_savdolar'],
+        'jami_savdo'    => $totalSales['jami_tushum'],
+        'jami_qaytarish'=> $totalReturns,
+        'net_sales'     => $totalSales['jami_tushum'] - $totalReturns,
+        'jami_qarz'     => $totalSales['jami_qarz'],
+        'jami_kassirlar'=> $totalSales['jami_kassirlar']
+    ];
+    
+    // 4. Oxirgi 7 kunlik savdo (grafik uchun)
+    $stmt = $this->db->prepare("
+        SELECT 
+            DATE(sotilgan_vaqt) as sana,
+            COUNT(*) as savdolar_soni,
+            SUM(yakuniy_summa) as kunlik_summa
+        FROM savdolar 
+        WHERE sotilgan_vaqt >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+            AND holat = 'YAKUNLANGAN'
+        GROUP BY DATE(sotilgan_vaqt)
+        ORDER BY sana ASC
+    ");
+    $stmt->execute();
+    $stats['weekly'] = $stmt->fetchAll();
+    
+    // 5. Top kategoriyalar
+    $stmt = $this->db->query("
+        SELECT 
+            k.nomi,
+            COUNT(DISTINCT s.id) as savdolar_soni,
+            SUM(st.soni) as sotilgan_soni,
+            SUM(st.qator_summa) as jami_summa
+        FROM kategoriyalar k
+        LEFT JOIN mahsulotlar p ON k.id = p.kategoriya_id
+        LEFT JOIN savdo_tarkibi st ON p.id = st.mahsulot_id
+        LEFT JOIN savdolar s ON st.savdo_id = s.id AND s.holat = 'YAKUNLANGAN'
+        GROUP BY k.id
+        ORDER BY jami_summa DESC
+        LIMIT 5
+    ");
+    $stats['topCategories'] = $stmt->fetchAll();
+    
+    return $stats;
+}
+
+/**
+ * Berilgan sana oralig'idagi qaytarishlar summasini qaytaradi
+ */
+private function getReturnsTotal($startDate = null, $endDate = null) {
+    try {
+        if ($startDate && $endDate) {
+            $stmt = $this->db->prepare("SELECT IFNULL(SUM(summa), 0) as total FROM qaytarishlar WHERE DATE(qaytarilgan_vaqt) BETWEEN ? AND ?");
+            $stmt->execute([$startDate, $endDate]);
+        } else {
+            $stmt = $this->db->query("SELECT IFNULL(SUM(summa), 0) as total FROM qaytarishlar");
+        }
+        $row = $stmt->fetch();
+        return (float)($row['total'] ?? 0);
+    } catch (\PDOException $e) {
+        // Jadval mavjud bo'lmasa yoki xatolik
+        error_log("Returns total error: " . $e->getMessage());
+        return 0;
     }
+}
     
    /**
  * Kam qolgan mahsulotlar ro'yxati - TUZATILGAN

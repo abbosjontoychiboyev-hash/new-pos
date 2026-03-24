@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Мар 13 2026 г., 07:09
+-- Время создания: Мар 24 2026 г., 09:22
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -47,8 +47,8 @@ CREATE TABLE `foydalanuvchilar` (
 --
 
 INSERT INTO `foydalanuvchilar` (`id`, `rol_id`, `fio`, `email`, `telefon`, `login`, `parol_hash`, `faol`, `oxirgi_kirish_vaqt`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`) VALUES
-(2, 2, 'To\'ychiboyev Najmiddin Shukurjon o\'g\'li', 'kassa@example.com', '+998200045578', 'Kassir', '$2y$10$rEwpJt5aWDJ4VR1OlYlNS.loDOXpLG.ootZIvCDkwzmzKKaNM58lW', 1, '2026-03-13 05:28:10', '2026-03-06 11:07:15', '2026-03-13 05:28:10', NULL),
-(3, 1, 'Abbosjon To\'ychiboyev', 'admin@example.com', '+998930008827', 'admin', '$2y$10$cwwtGPH3nRv/1Gg3p8R9I.Q.VWGxqRBoIFr1VDZfnYSSQMWfQjX5S', 1, '2026-03-13 05:21:57', '2026-03-10 05:08:31', '2026-03-13 05:21:57', NULL),
+(2, 2, 'To\'ychiboyev Najmiddin Shukurjon o\'g\'li', 'kassa@example.com', '+998200045578', 'Kassir', '$2y$10$rEwpJt5aWDJ4VR1OlYlNS.loDOXpLG.ootZIvCDkwzmzKKaNM58lW', 1, '2026-03-19 07:24:23', '2026-03-06 11:07:15', '2026-03-19 07:24:23', NULL),
+(3, 1, 'Abbosjon To\'ychiboyev', 'admin@example.com', '+998930008827', 'admin', '$2y$10$cwwtGPH3nRv/1Gg3p8R9I.Q.VWGxqRBoIFr1VDZfnYSSQMWfQjX5S', 1, '2026-03-24 04:32:04', '2026-03-10 05:08:31', '2026-03-24 04:32:04', NULL),
 (4, 3, 'Omborchi', 'ombor@example.com', '+998200007989', 'Omborchi', '$2y$10$zM2V5n.tsRRy4v4By6iT6ekjdIArb1TzvaQCTW/Z3Dr2Tz1oHXCJ2', 1, '2026-03-13 03:21:34', '2026-03-13 03:19:14', '2026-03-13 03:21:34', NULL);
 
 -- --------------------------------------------------------
@@ -80,6 +80,7 @@ CREATE TABLE `kassa_smenalari` (
   `yopilgan_vaqt` datetime DEFAULT NULL,
   `ochilish_naqd` decimal(12,2) NOT NULL DEFAULT 0.00,
   `yopilish_naqd` decimal(12,2) DEFAULT NULL,
+  `actual_cash` decimal(12,2) DEFAULT NULL,
   `holat` enum('OCHIQ','YOPIQ') NOT NULL DEFAULT 'OCHIQ',
   `izoh` varchar(255) DEFAULT NULL,
   `yaratilgan_vaqt` timestamp NULL DEFAULT current_timestamp(),
@@ -90,9 +91,10 @@ CREATE TABLE `kassa_smenalari` (
 -- Дамп данных таблицы `kassa_smenalari`
 --
 
-INSERT INTO `kassa_smenalari` (`id`, `kassir_id`, `ochilgan_vaqt`, `yopilgan_vaqt`, `ochilish_naqd`, `yopilish_naqd`, `holat`, `izoh`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
-(1, 3, '2026-03-13 10:23:11', NULL, 521000.00, NULL, 'OCHIQ', NULL, '2026-03-13 05:23:11', '2026-03-13 05:23:11'),
-(2, 2, '2026-03-13 10:28:21', NULL, 785000.00, NULL, 'OCHIQ', NULL, '2026-03-13 05:28:21', '2026-03-13 05:28:21');
+INSERT INTO `kassa_smenalari` (`id`, `kassir_id`, `ochilgan_vaqt`, `yopilgan_vaqt`, `ochilish_naqd`, `yopilish_naqd`, `actual_cash`, `holat`, `izoh`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
+(1, 3, '2026-03-13 10:23:11', '2026-03-24 09:40:50', 521000.00, 315000.00, NULL, 'YOPIQ', NULL, '2026-03-13 05:23:11', '2026-03-24 04:40:50'),
+(2, 2, '2026-03-13 10:28:21', NULL, 785000.00, NULL, NULL, 'OCHIQ', NULL, '2026-03-13 05:28:21', '2026-03-13 05:28:21'),
+(3, 3, '2026-03-24 09:41:02', NULL, 20000.00, NULL, NULL, 'OCHIQ', NULL, '2026-03-24 04:41:02', '2026-03-24 04:41:02');
 
 -- --------------------------------------------------------
 
@@ -145,7 +147,7 @@ INSERT INTO `kategoriyalar` (`id`, `nomi`, `izoh`, `faol`, `tartib`, `yaratilgan
 (27, 'Chegirmadagi mahsulotlar', 'Aksiya mahsulotlari', 1, 27, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
 (28, 'Import mahsulotlar', 'Tashqaridan keltirilgan mahsulotlar', 1, 28, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
 (29, 'Mahalliy mahsulotlar', 'Mahalliy ishlab chiqarilgan mahsulotlar', 1, 29, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
-(30, 'Boshqa mahsulotlar', 'Turli xil mahsulotlar', 1, 30, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL);
+(30, 'Boshqa mahsulotlar', 'Turli xil mahsulotlar', 1, 30, '2026-03-13 05:21:32', '2026-03-13 07:31:30', NULL);
 
 -- --------------------------------------------------------
 
@@ -166,6 +168,13 @@ CREATE TABLE `kirimlar` (
   `yangilangan_vaqt` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Дамп данных таблицы `kirimlar`
+--
+
+INSERT INTO `kirimlar` (`id`, `hisob_faktura`, `yetkazib_beruvchi_id`, `kiritgan_id`, `umumiy_summa`, `holat`, `kirim_vaqt`, `izoh`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
+(1, NULL, 6, 3, 52500.00, 'QABUL_QILINDI', '2026-03-24 13:00:41', 'Sotuv', '2026-03-24 08:00:41', '2026-03-24 08:00:41');
+
 -- --------------------------------------------------------
 
 --
@@ -181,6 +190,13 @@ CREATE TABLE `kirim_tarkibi` (
   `qator_summa` decimal(12,2) NOT NULL DEFAULT 0.00,
   `yaratilgan_vaqt` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `kirim_tarkibi`
+--
+
+INSERT INTO `kirim_tarkibi` (`id`, `kirim_id`, `mahsulot_id`, `soni`, `birlik_kelish_narxi`, `qator_summa`, `yaratilgan_vaqt`) VALUES
+(1, 1, 7, 15, 3500.00, 52500.00, '2026-03-24 08:00:41');
 
 -- --------------------------------------------------------
 
@@ -210,34 +226,34 @@ CREATE TABLE `mahsulotlar` (
 --
 
 INSERT INTO `mahsulotlar` (`id`, `kategoriya_id`, `subkategoriya_id`, `nomi`, `shtrix_kod`, `birlik`, `kelish_narxi`, `sotish_narxi`, `miqdor`, `minimal_miqdor`, `faol`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`) VALUES
-(1, 16, 1, 'Montella suv 0.5L', '478000000001', 'dona', 2500.00, 4000.00, 118, 10, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(2, 16, 1, 'Nestle suv 1L', '478000000002', 'dona', 3500.00, 5500.00, 98, 10, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(1, 16, 1, 'Montella suv 0.5L', '478000000001', 'dona', 2500.00, 4000.00, 117, 10, 1, '2026-03-13 05:21:32', '2026-03-24 07:41:55', NULL),
+(2, 16, 1, 'Nestle suv 1L', '478000000002', 'dona', 3500.00, 5500.00, 97, 10, 1, '2026-03-13 05:21:32', '2026-03-19 07:23:07', NULL),
 (3, 18, 2, 'Coca-Cola 1L', '478000000003', 'dona', 7000.00, 10000.00, 89, 8, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
 (4, 18, 2, 'Fanta 1L', '478000000004', 'dona', 6800.00, 9800.00, 76, 8, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(5, 18, 2, 'Sprite 1L', '478000000005', 'dona', 6800.00, 9800.00, 84, 8, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(6, 17, 1, 'Bliss olma sharbat 1L', '478000000006', 'dona', 9000.00, 12500.00, 58, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(7, 17, 1, 'Dena anor sharbat 1L', '478000000007', 'dona', 9500.00, 13000.00, 54, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(5, 18, 2, 'Sprite 1L', '478000000005', 'dona', 6800.00, 9800.00, 83, 8, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
+(6, 17, 1, 'Bliss olma sharbat 1L', '478000000006', 'dona', 9000.00, 12500.00, 57, 5, 1, '2026-03-13 05:21:32', '2026-03-24 07:36:13', NULL),
+(7, 17, 1, 'Dena anor sharbat 1L', '478000000007', 'dona', 9500.00, 13000.00, 68, 5, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:41', NULL),
 (8, 2, 3, 'Musaffo sut 1L', '478000000008', 'dona', 8500.00, 11000.00, 69, 6, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
 (9, 2, 4, 'Qatiq 0.5L', '478000000009', 'dona', 6000.00, 8500.00, 63, 6, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
 (10, 2, 4, 'Kefir 0.5L', '478000000010', 'dona', 6200.00, 8800.00, 49, 6, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(11, 3, 5, 'Obi non', '478000000011', 'dona', 2500.00, 3500.00, 38, 10, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(12, 3, 6, 'Bulochka shirin', '478000000012', 'dona', 3000.00, 5000.00, 34, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(11, 3, 5, 'Obi non', '478000000011', 'dona', 2500.00, 3500.00, 33, 10, 1, '2026-03-13 05:21:32', '2026-03-24 07:43:27', NULL),
+(12, 3, 6, 'Bulochka shirin', '478000000012', 'dona', 3000.00, 5000.00, 33, 5, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
 (13, 4, 7, 'Alpen Gold shokolad', '478000000013', 'dona', 12000.00, 16000.00, 45, 5, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
-(14, 4, 8, 'KDV konfet 1kg', '478000000014', 'kg', 45000.00, 58000.00, 18, 20, 1, '2026-03-13 05:21:32', '2026-03-13 06:04:12', NULL),
+(14, 4, 8, 'KDV konfet 1kg', '478000000014', 'kg', 45000.00, 58000.00, 16, 20, 1, '2026-03-13 05:21:32', '2026-03-19 07:23:07', NULL),
 (15, 5, 9, 'Greenfield qora choy', '478000000015', 'quti', 18000.00, 24000.00, 30, 4, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
 (16, 5, 10, 'Nescafe Classic 95g', '478000000016', 'dona', 28000.00, 35000.00, 28, 4, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL),
-(17, 6, 11, 'Doktorskaya kolbasa', '478000000017', 'kg', 52000.00, 65000.00, 11, 15, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(17, 6, 11, 'Doktorskaya kolbasa', '478000000017', 'kg', 52000.00, 65000.00, 10, 15, 1, '2026-03-13 05:21:32', '2026-03-24 07:38:14', NULL),
 (18, 6, 12, 'Sosiska premium', '478000000018', 'kg', 48000.00, 62000.00, 17, 3, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
 (19, 7, 13, 'Eskimo muzqaymoq', '478000000019', 'dona', 4500.00, 7000.00, 89, 10, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(20, 8, 15, 'Makfa makaron 400g', '478000000020', 'dona', 7000.00, 9500.00, 74, 8, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(21, 8, 16, 'Guruch 1kg', '478000000021', 'kg', 12500.00, 16000.00, 58, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(20, 8, 15, 'Makfa makaron 400g', '478000000020', 'dona', 7000.00, 9500.00, 73, 8, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
+(21, 8, 16, 'Guruch 1kg', '478000000021', 'kg', 12500.00, 16000.00, 55, 5, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
 (22, 8, 16, 'Grechka 1kg', '478000000022', 'kg', 17000.00, 22000.00, 33, 4, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(23, 9, 18, 'Bonduelle makkajo‘xori', '478000000023', 'dona', 14000.00, 18000.00, 15, 4, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(23, 9, 18, 'Bonduelle makkajo‘xori', '478000000023', 'dona', 14000.00, 18000.00, 15, 20, 1, '2026-03-13 05:21:32', '2026-03-19 07:22:04', NULL),
 (24, 10, 19, 'Oila kungaboqar yog‘i 1L', '478000000024', 'dona', 14500.00, 18500.00, 48, 6, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(25, 10, 20, 'Sariyog‘ 200g', '478000000025', 'dona', 16000.00, 21000.00, 29, 4, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(25, 10, 20, 'Sariyog‘ 200g', '478000000025', 'dona', 16000.00, 21000.00, 28, 4, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
 (26, 11, 21, 'Safeguard sovun', '478000000026', 'dona', 6000.00, 8500.00, 46, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(27, 11, 22, 'Colgate tish pastasi', '478000000027', 'dona', 12000.00, 16000.00, 38, 5, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
-(28, 12, 23, 'Ariel kir yuvish kukuni 3kg', '478000000028', 'dona', 48000.00, 58000.00, 15, 2, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
+(27, 11, 22, 'Colgate tish pastasi', '478000000027', 'dona', 12000.00, 16000.00, 36, 5, 1, '2026-03-13 05:21:32', '2026-03-13 07:36:52', NULL),
+(28, 12, 23, 'Ariel kir yuvish kukuni 3kg', '478000000028', 'dona', 48000.00, 58000.00, 2, 2, 1, '2026-03-13 05:21:32', '2026-03-13 07:43:13', NULL),
 (29, 15, 27, 'Lays chips', '478000000029', 'dona', 9000.00, 13000.00, 68, 8, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL),
 (30, 22, 30, 'Sloboda ketchup 500g', '478000000030', 'dona', 11000.00, 14500.00, 37, 4, 1, '2026-03-13 05:21:32', '2026-03-13 06:05:41', NULL);
 
@@ -264,35 +280,7 @@ CREATE TABLE `mijozlar` (
 
 INSERT INTO `mijozlar` (`id`, `fio`, `telefon`, `manzil`, `izoh`, `faol`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
 (1, 'Aliyev Sardor', '+998901112233', 'Qo‘qon shahri', 'Doimiy mijoz', 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(2, 'Karimova Mohira', '+998901112234', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(3, 'Tursunov Javohir', '+998901112235', 'Farg‘ona shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(4, 'Usmonova Dilnoza', '+998901112236', 'Marg‘ilon', 'Nasiya oladi', 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(5, 'Rasulov Bekzod', '+998901112237', 'Rishton', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(6, 'Qodirova Nargiza', '+998901112238', 'Toshloq', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(7, 'Ergashev Azizbek', '+998901112239', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(8, 'Yuldasheva Shahnoza', '+998901112240', 'Beshariq', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(9, 'Mahmudov Asadbek', '+998901112241', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(10, 'Mamatova Zilola', '+998901112242', 'Dang‘ara', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(11, 'Abdullayev Sherzod', '+998901112243', 'Oltiariq', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(12, 'Ismoilova Nilufar', '+998901112244', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(13, 'Hamroyev Oybek', '+998901112245', 'Farg‘ona shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(14, 'Rahimova Feruza', '+998901112246', 'Marg‘ilon', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(15, 'Sobirov Shaxob', '+998901112247', 'Qo‘qon shahri', 'Ulgurji xaridor', 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(16, 'Nazarov Umid', '+998901112248', 'Rishton', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(17, 'Akbarova Sevara', '+998901112249', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(18, 'Sultonov Mirjalol', '+998901112250', 'Buvayda', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(19, 'Tojiboyeva Dildora', '+998901112251', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(20, 'Valiyev Islom', '+998901112252', 'Furqat', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(21, 'Po‘latova Madina', '+998901112253', 'Farg‘ona shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(22, 'Xudoyberdiyev Doston', '+998901112254', 'Marg‘ilon', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(23, 'Normatova Malika', '+998901112255', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(24, 'Jalolov Elyor', '+998901112256', 'Beshariq', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(25, 'Raximova Shoxista', '+998901112257', 'Dang‘ara', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(26, 'Yusupov Murod', '+998901112258', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(27, 'G‘aniyeva Mohigul', '+998901112259', 'Oltiariq', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(28, 'Saidov Farrux', '+998901112260', 'Rishton', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(29, 'Jo‘rayeva Iroda', '+998901112261', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32'),
-(30, 'Hakimov Timur', '+998901112262', 'Farg‘ona shahri', 'VIP mijoz', 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32');
+(2, 'Karimova Mohira', '+998901112234', 'Qo‘qon shahri', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32');
 
 -- --------------------------------------------------------
 
@@ -330,6 +318,46 @@ CREATE TABLE `ombor_jurnali` (
   `izoh` varchar(255) DEFAULT NULL,
   `yaratilgan_vaqt` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `ombor_jurnali`
+--
+
+INSERT INTO `ombor_jurnali` (`id`, `mahsulot_id`, `amal`, `miqdor_ozgarish`, `eski_miqdor`, `yangi_miqdor`, `manba_turi`, `manba_id`, `foydalanuvchi_id`, `izoh`, `yaratilgan_vaqt`) VALUES
+(1, 6, 'KIRIM', 1, 56, 57, 'QAYTARISH', NULL, 0, 'Qaytarish: sa', '2026-03-24 12:36:13'),
+(2, 17, 'KIRIM', 1, 10, 10, 'QAYTARISH', NULL, 0, 'Qaytarish: sa', '2026-03-24 12:40:22'),
+(3, 1, 'KIRIM', 2, 114, 116, 'QAYTARISH', NULL, 0, 'Qaytarish: wq', '2026-03-24 12:41:09'),
+(4, 1, 'KIRIM', 1, 116, 117, 'QAYTARISH', NULL, 0, 'Qaytarish: q', '2026-03-24 12:41:55'),
+(5, 11, 'KIRIM', 1, 36, 37, 'QAYTARISH', NULL, 0, 'Qaytarish: w', '2026-03-24 12:42:52');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `qaytarishlar`
+--
+
+CREATE TABLE `qaytarishlar` (
+  `id` int(20) UNSIGNED NOT NULL,
+  `savdo_id` int(20) UNSIGNED NOT NULL COMMENT 'Asosiy savdo (chek) ID si',
+  `savdo_tarkibi_id` int(20) UNSIGNED DEFAULT NULL COMMENT 'Savdo tarkibidagi aniq qator ID si (agar kerak bo‘lsa)',
+  `mahsulot_id` int(20) UNSIGNED NOT NULL COMMENT 'Qaytarilgan mahsulot ID si',
+  `miqdor` int(11) NOT NULL COMMENT 'Qaytarilgan miqdor',
+  `summa` decimal(12,2) NOT NULL COMMENT 'Qaytarilgan summa',
+  `sabab` varchar(255) DEFAULT NULL COMMENT 'Qaytarish sababi',
+  `foydalanuvchi_id` int(20) UNSIGNED NOT NULL COMMENT 'Qaytarishni amalga oshirgan kassir ID si',
+  `qaytarilgan_vaqt` timestamp NULL DEFAULT current_timestamp() COMMENT 'Qaytarish vaqti'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `qaytarishlar`
+--
+
+INSERT INTO `qaytarishlar` (`id`, `savdo_id`, `savdo_tarkibi_id`, `mahsulot_id`, `miqdor`, `summa`, `sabab`, `foydalanuvchi_id`, `qaytarilgan_vaqt`) VALUES
+(1, 12, 67, 6, 1, 12500.00, 'sa', 3, '2026-03-24 07:36:13'),
+(2, 13, 68, 17, 1, 32500.00, 'sa', 3, '2026-03-24 07:40:21'),
+(3, 13, 69, 1, 2, 8000.00, 'wq', 3, '2026-03-24 07:41:09'),
+(4, 13, 69, 1, 1, 4000.00, 'q', 3, '2026-03-24 07:41:55'),
+(5, 13, 70, 11, 1, 3500.00, 'w', 3, '2026-03-24 07:42:52');
 
 -- --------------------------------------------------------
 
@@ -392,7 +420,14 @@ INSERT INTO `savdolar` (`id`, `chek_raqami`, `kassir_id`, `kassa_smena_id`, `mij
 (5, 'CHK-20260313-0005-684', 3, NULL, 1, 'KARTA', 'QISMAN', 162000.00, 0.00, 162000.00, 100000.00, 62000.00, 'YAKUNLANGAN', '2026-03-13 11:03:02', '', '2026-03-13 06:03:02', '2026-03-13 06:06:35'),
 (6, 'CHK-20260313-0006-409', 3, NULL, 2, 'KARTA', 'QISMAN', 406000.00, 0.00, 406000.00, 356000.00, 50000.00, 'YAKUNLANGAN', '2026-03-13 11:04:12', '', '2026-03-13 06:04:12', '2026-03-13 06:06:59'),
 (7, 'CHK-20260313-0007-887', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 650000.00, 0.00, 650000.00, 650000.00, 0.00, 'YAKUNLANGAN', '2026-03-13 11:05:04', '', '2026-03-13 06:05:04', '2026-03-13 06:05:04'),
-(8, 'CHK-20260313-0008-449', 2, NULL, NULL, 'NAQD', 'TOLANGAN', 450400.00, 0.00, 450400.00, 450400.00, 0.00, 'YAKUNLANGAN', '2026-03-13 11:05:41', '', '2026-03-13 06:05:41', '2026-03-13 06:05:41');
+(8, 'CHK-20260313-0008-449', 2, NULL, NULL, 'NAQD', 'TOLANGAN', 450400.00, 0.00, 450400.00, 450400.00, 0.00, 'YAKUNLANGAN', '2026-03-13 11:05:41', '', '2026-03-13 06:05:41', '2026-03-13 06:05:41'),
+(9, 'CHK-20260313-0009-767', 3, NULL, NULL, 'ARALASH', 'TOLANGAN', 382800.00, 2800.00, 380000.00, 380000.00, 0.00, 'YAKUNLANGAN', '2026-03-13 12:36:52', '', '2026-03-13 07:36:52', '2026-03-13 07:36:52'),
+(10, 'CHK-20260313-0010-262', 3, NULL, 2, 'NAQD', 'QISMAN', 580000.00, 0.00, 580000.00, 330000.00, 250000.00, 'YAKUNLANGAN', '2026-03-13 12:43:13', '', '2026-03-13 07:43:13', '2026-03-19 07:20:57'),
+(11, 'CHK-20260319-0001-187', 3, NULL, 2, 'NAQD', 'QISMAN', 39660.00, 660.00, 39000.00, 19000.00, 20000.00, 'YAKUNLANGAN', '2026-03-19 12:23:07', '', '2026-03-19 07:23:07', '2026-03-24 06:40:12'),
+(12, 'CHK-20260324-0001-357', 3, NULL, NULL, 'ARALASH', 'TOLANGAN', 13000.00, 500.00, 12500.00, 12000.00, 500.00, 'YAKUNLANGAN', '2026-03-24 09:45:14', '0', '2026-03-24 04:45:14', '2026-03-24 07:36:13'),
+(13, 'CHK-20260324-0002-267', 3, NULL, NULL, 'ARALASH', 'TOLANGAN', 13000.00, 0.00, 13000.00, 13000.00, 0.00, 'YAKUNLANGAN', '2026-03-24 12:38:14', '', '2026-03-24 07:38:14', '2026-03-24 07:40:22'),
+(14, 'CHK-20260324-0003-158', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 46500.00, 500.00, 46000.00, 46000.00, 0.00, 'YAKUNLANGAN', '2026-03-24 12:43:27', '', '2026-03-24 07:43:27', '2026-03-24 07:43:27'),
+(15, 'CHK-20260324-0004-450', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 32500.00, 0.00, 32500.00, 32500.00, 0.00, 'YAKUNLANGAN', '2026-03-24 12:47:30', '', '2026-03-24 07:47:30', '2026-03-24 07:47:30');
 
 -- --------------------------------------------------------
 
@@ -447,7 +482,7 @@ CREATE TABLE `savdo_tarkibi` (
   `id` int(20) UNSIGNED NOT NULL,
   `savdo_id` bigint(20) UNSIGNED NOT NULL,
   `mahsulot_id` bigint(20) UNSIGNED NOT NULL,
-  `soni` int(11) NOT NULL,
+  `soni` float NOT NULL,
   `birlik_narx` decimal(12,2) NOT NULL DEFAULT 0.00,
   `chegirma` decimal(12,2) NOT NULL DEFAULT 0.00,
   `qator_summa` decimal(12,2) NOT NULL DEFAULT 0.00,
@@ -504,7 +539,26 @@ INSERT INTO `savdo_tarkibi` (`id`, `savdo_id`, `mahsulot_id`, `soni`, `birlik_na
 (49, 8, 27, 1, 16000.00, 0.00, 16000.00, '2026-03-13 06:05:41'),
 (50, 8, 28, 1, 58000.00, 0.00, 58000.00, '2026-03-13 06:05:41'),
 (51, 8, 29, 1, 13000.00, 0.00, 13000.00, '2026-03-13 06:05:41'),
-(52, 8, 30, 1, 14500.00, 0.00, 14500.00, '2026-03-13 06:05:41');
+(52, 8, 30, 1, 14500.00, 0.00, 14500.00, '2026-03-13 06:05:41'),
+(53, 9, 21, 3, 16000.00, 0.00, 48000.00, '2026-03-13 07:36:52'),
+(54, 9, 20, 1, 9500.00, 0.00, 9500.00, '2026-03-13 07:36:52'),
+(55, 9, 12, 1, 5000.00, 0.00, 5000.00, '2026-03-13 07:36:52'),
+(56, 9, 14, 1, 58000.00, 0.00, 58000.00, '2026-03-13 07:36:52'),
+(57, 9, 7, 1, 13000.00, 0.00, 13000.00, '2026-03-13 07:36:52'),
+(58, 9, 6, 1, 12500.00, 0.00, 12500.00, '2026-03-13 07:36:52'),
+(59, 9, 5, 1, 9800.00, 0.00, 9800.00, '2026-03-13 07:36:52'),
+(60, 9, 28, 3, 58000.00, 0.00, 174000.00, '2026-03-13 07:36:52'),
+(61, 9, 27, 2, 16000.00, 0.00, 32000.00, '2026-03-13 07:36:52'),
+(62, 9, 25, 1, 21000.00, 0.00, 21000.00, '2026-03-13 07:36:52'),
+(63, 10, 28, 10, 58000.00, 0.00, 580000.00, '2026-03-13 07:43:13'),
+(64, 11, 1, 1, 4000.00, 0.00, 4000.00, '2026-03-19 07:23:07'),
+(65, 11, 2, 1, 5500.00, 0.00, 5500.00, '2026-03-19 07:23:07'),
+(66, 11, 14, 1, 58000.00, 0.00, 30160.00, '2026-03-19 07:23:07'),
+(68, 13, 17, 0, 65000.00, 0.00, 0.00, '2026-03-24 07:38:14'),
+(70, 13, 11, 1, 3500.00, 0.00, 3500.00, '2026-03-24 07:38:14'),
+(71, 14, 11, 4, 3500.00, 0.00, 14000.00, '2026-03-24 07:43:27'),
+(72, 14, 17, 1, 65000.00, 0.00, 32500.00, '2026-03-24 07:43:27'),
+(73, 15, 17, 0.5, 65000.00, 0.00, 32500.00, '2026-03-24 07:47:30');
 
 -- --------------------------------------------------------
 
@@ -602,7 +656,11 @@ INSERT INTO `tolovlar` (`id`, `savdo_id`, `mijoz_id`, `kassa_smena_id`, `usul`, 
 (3, 5, 1, NULL, 'KARTA', 0.00, 'Boshlang\'ich to\'lov', 3, '2026-03-13 11:03:02'),
 (4, 6, 2, NULL, 'KARTA', 206000.00, 'Boshlang\'ich to\'lov', 3, '2026-03-13 11:04:12'),
 (5, 5, 1, NULL, 'NAQD', 100000.00, 'ertaga', 3, '2026-03-13 11:06:35'),
-(6, 6, 2, NULL, 'NAQD', 150000.00, 'ertaga', 3, '2026-03-13 11:06:59');
+(6, 6, 2, NULL, 'NAQD', 150000.00, 'ertaga', 3, '2026-03-13 11:06:59'),
+(7, 10, 2, NULL, 'NAQD', 80000.00, 'Boshlang\'ich to\'lov', 3, '2026-03-13 12:43:13'),
+(8, 10, 2, NULL, 'NAQD', 250000.00, 'as', 3, '2026-03-19 12:20:57'),
+(9, 11, 2, NULL, 'NAQD', 15000.00, 'Boshlang\'ich to\'lov', 3, '2026-03-19 12:23:07'),
+(10, 11, 2, NULL, 'NAQD', 4000.00, '', 3, '2026-03-24 11:40:12');
 
 -- --------------------------------------------------------
 
@@ -636,35 +694,35 @@ CREATE TABLE `yetkazib_beruvchilar` (
 --
 
 INSERT INTO `yetkazib_beruvchilar` (`id`, `nomi`, `telefon`, `manzil`, `izoh`, `kelish_kuni`, `qarz`, `oxirgi_olingan_sana`, `eslatma`, `faol`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`, `tolash_muddati`, `tolash_eslatma`, `oxirgi_tolov_sana`, `jami_olingan`, `jami_tolangan`) VALUES
-(1, 'Fayz Trade', '+998911110001', 'Toshkent', 'Ichimliklar yetkazadi', 'Dushanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik to‘lov', '2026-03-05', 3500000.00, 3500000.00),
+(1, 'Fayz Trade', '+998911110001', 'Toshkent', 'Ichimliklar yetkazadi', 'Dushanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:29', '2026-03-24 07:59:29', 7, 'Haftalik to‘lov', '2026-03-05', 3500000.00, 3500000.00),
 (2, 'Baraka Foods', '+998911110002', 'Qo‘qon', 'Sut mahsulotlari', 'Seshanba', 150000.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 5, '5 kun ichida', '2026-03-06', 2800000.00, 2650000.00),
-(3, 'Oltin Don Non', '+998911110003', 'Qo‘qon', 'Non va pishiriqlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 1, 'Kunlik hisob', '2026-03-10', 1200000.00, 1200000.00),
+(3, 'Oltin Don Non', '+998911110003', 'Qo‘qon', 'Non va pishiriqlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:31', '2026-03-24 07:59:31', 1, 'Kunlik hisob', '2026-03-10', 1200000.00, 1200000.00),
 (4, 'Sweet Market Supply', '+998911110004', 'Toshkent', 'Shirinliklar', 'Payshanba', 200000.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-07', 3100000.00, 2900000.00),
-(5, 'Coffee Tea Servis', '+998911110005', 'Farg‘ona', 'Choy va qahva', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun ichida', '2026-03-08', 1800000.00, 1800000.00),
-(6, 'Go‘sht Savdo Plus', '+998911110006', 'Qo‘qon', 'Kolbasa va go‘sht mahsulotlari', 'Chorshanba', 320000.00, '2026-03-05', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 5, 'Qisqa muddatli', '2026-03-09', 4000000.00, 3680000.00),
-(7, 'Muzqaymoq Servis', '+998911110007', 'Toshkent', 'Muzqaymoq yetkazib beradi', 'Shanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-06', 2100000.00, 2100000.00),
-(8, 'Makaron House', '+998911110008', 'Andijon', 'Makaron mahsulotlari', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 14, '2 haftalik', '2026-03-09', 1700000.00, 1700000.00),
+(5, 'Coffee Tea Servis', '+998911110005', 'Farg‘ona', 'Choy va qahva', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:26', '2026-03-24 07:59:26', 10, '10 kun ichida', '2026-03-08', 1800000.00, 1800000.00),
+(6, 'Go‘sht Savdo Plus', '+998911110006', 'Qo‘qon', 'Kolbasa va go‘sht mahsulotlari', 'Chorshanba', 372500.00, '2026-03-24', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:41', NULL, 5, 'Qisqa muddatli', '2026-03-09', 4052500.00, 3680000.00),
+(7, 'Muzqaymoq Servis', '+998911110007', 'Toshkent', 'Muzqaymoq yetkazib beradi', 'Shanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:33', '2026-03-24 07:59:33', 7, 'Haftalik', '2026-03-06', 2100000.00, 2100000.00),
+(8, 'Makaron House', '+998911110008', 'Andijon', 'Makaron mahsulotlari', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:35', '2026-03-24 07:59:35', 14, '2 haftalik', '2026-03-09', 1700000.00, 1700000.00),
 (9, 'Konserva Trade', '+998911110009', 'Namangan', 'Konserva mahsulotlari', 'Seshanba', 50000.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-07', 1300000.00, 1250000.00),
-(10, 'Yog‘ Markaz', '+998911110010', 'Qo‘qon', 'Yog‘ mahsulotlari', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 5, '5 kun', '2026-03-08', 2200000.00, 2200000.00),
+(10, 'Yog‘ Markaz', '+998911110010', 'Qo‘qon', 'Yog‘ mahsulotlari', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:38', '2026-03-24 07:59:38', 5, '5 kun', '2026-03-08', 2200000.00, 2200000.00),
 (11, 'Clean World', '+998911110011', 'Toshkent', 'Gigiyena vositalari', 'Payshanba', 110000.00, '2026-03-05', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun', '2026-03-10', 2600000.00, 2490000.00),
-(12, 'Toza Uy Servis', '+998911110012', 'Farg‘ona', 'Tozalash vositalari', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-08', 2400000.00, 2400000.00),
-(13, 'Fresh Agro', '+998911110013', 'Rishton', 'Meva va sabzavotlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 1, 'Kunlik', '2026-03-10', 900000.00, 900000.00),
+(12, 'Toza Uy Servis', '+998911110012', 'Farg‘ona', 'Tozalash vositalari', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:46', '2026-03-24 07:59:46', 7, 'Haftalik', '2026-03-08', 2400000.00, 2400000.00),
+(13, 'Fresh Agro', '+998911110013', 'Rishton', 'Meva va sabzavotlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:49', '2026-03-24 07:59:49', 1, 'Kunlik', '2026-03-10', 900000.00, 900000.00),
 (14, 'Baby Care Supply', '+998911110014', 'Toshkent', 'Bolalar mahsulotlari', 'Seshanba', 70000.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun', '2026-03-09', 1900000.00, 1830000.00),
-(15, 'Snack Planet', '+998911110015', 'Namangan', 'Chips va tamaddilar', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-08', 1600000.00, 1600000.00),
-(16, 'Aqua Trade', '+998911110016', 'Toshkent', 'Suvlar', 'Dushanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-06', 2000000.00, 2000000.00),
+(15, 'Snack Planet', '+998911110015', 'Namangan', 'Chips va tamaddilar', 'Juma', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:52', '2026-03-24 07:59:52', 7, 'Haftalik', '2026-03-08', 1600000.00, 1600000.00),
+(16, 'Aqua Trade', '+998911110016', 'Toshkent', 'Suvlar', 'Dushanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:54', '2026-03-24 07:59:54', 7, 'Haftalik', '2026-03-06', 2000000.00, 2000000.00),
 (17, 'Juice Distribution', '+998911110017', 'Farg‘ona', 'Sharbatlar', 'Payshanba', 90000.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-08', 2100000.00, 2010000.00),
-(18, 'Soft Drinks Group', '+998911110018', 'Toshkent', 'Gazli ichimliklar', 'Seshanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-07', 4300000.00, 4300000.00),
+(18, 'Soft Drinks Group', '+998911110018', 'Toshkent', 'Gazli ichimliklar', 'Seshanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:57', '2026-03-24 07:59:57', 7, 'Haftalik', '2026-03-07', 4300000.00, 4300000.00),
 (19, 'Energy Max Supply', '+998911110019', 'Toshkent', 'Energetik ichimliklar', 'Juma', 120000.00, '2026-03-05', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 5, '5 kun', '2026-03-09', 2500000.00, 2380000.00),
-(20, 'Dry Fruits Export', '+998911110020', 'Samarqand', 'Quruq mevalar', 'Chorshanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 14, '2 haftalik', '2026-03-08', 1450000.00, 1450000.00),
-(21, 'Spice House', '+998911110021', 'Buxoro', 'Ziravorlar', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun', '2026-03-09', 1100000.00, 1100000.00),
+(20, 'Dry Fruits Export', '+998911110020', 'Samarqand', 'Quruq mevalar', 'Chorshanba', 0.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:59', '2026-03-24 07:59:59', 14, '2 haftalik', '2026-03-08', 1450000.00, 1450000.00),
+(21, 'Spice House', '+998911110021', 'Buxoro', 'Ziravorlar', 'Dushanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:02', '2026-03-24 08:00:02', 10, '10 kun', '2026-03-09', 1100000.00, 1100000.00),
 (22, 'Sauce Market', '+998911110022', 'Toshkent', 'Sous va ketchup', 'Payshanba', 60000.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-07', 1750000.00, 1690000.00),
-(23, 'Parranda Agro', '+998911110023', 'Qo‘qon', 'Tuxum va parranda', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 1, 'Kunlik', '2026-03-10', 980000.00, 980000.00),
+(23, 'Parranda Agro', '+998911110023', 'Qo‘qon', 'Tuxum va parranda', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:05', '2026-03-24 08:00:05', 1, 'Kunlik', '2026-03-10', 980000.00, 980000.00),
 (24, 'Fast Food Servis', '+998911110024', 'Farg‘ona', 'Fast food ingredientlari', 'Seshanba', 85000.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-08', 2300000.00, 2215000.00),
-(25, 'Uy Buyumlari Center', '+998911110025', 'Toshkent', 'Uy-ro‘zg‘or buyumlari', 'Juma', 0.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun', '2026-03-09', 1400000.00, 1400000.00),
-(26, 'Office Mini Supply', '+998911110026', 'Qo‘qon', 'Ofis mayda buyumlari', 'Chorshanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 14, '2 haftalik', '2026-03-09', 900000.00, 900000.00),
+(25, 'Uy Buyumlari Center', '+998911110025', 'Toshkent', 'Uy-ro‘zg‘or buyumlari', 'Juma', 0.00, '2026-03-03', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:09', '2026-03-24 08:00:09', 10, '10 kun', '2026-03-09', 1400000.00, 1400000.00),
+(26, 'Office Mini Supply', '+998911110026', 'Qo‘qon', 'Ofis mayda buyumlari', 'Chorshanba', 0.00, '2026-03-02', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:12', '2026-03-24 08:00:12', 14, '2 haftalik', '2026-03-09', 900000.00, 900000.00),
 (27, 'Aksiya Trade', '+998911110027', 'Toshkent', 'Chegirmadagi mahsulotlar', 'Dushanba', 50000.00, '2026-03-01', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-06', 1500000.00, 1450000.00),
-(28, 'Import Food LLC', '+998911110028', 'Toshkent', 'Import oziq-ovqat', 'Payshanba', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 10, '10 kun', '2026-03-09', 5200000.00, 5200000.00),
-(29, 'Mahalliy Savdo', '+998911110029', 'Qo‘qon', 'Mahalliy mahsulotlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 3, '3 kun', '2026-03-10', 1350000.00, 1350000.00),
+(28, 'Import Food LLC', '+998911110028', 'Toshkent', 'Import oziq-ovqat', 'Payshanba', 0.00, '2026-03-04', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 08:00:15', '2026-03-24 08:00:15', 10, '10 kun', '2026-03-09', 5200000.00, 5200000.00),
+(29, 'Mahalliy Savdo', '+998911110029', 'Qo‘qon', 'Mahalliy mahsulotlar', 'Har kuni', 0.00, '2026-03-10', NULL, 1, '2026-03-13 05:21:32', '2026-03-24 07:59:42', '2026-03-24 07:59:42', 3, '3 kun', '2026-03-10', 1350000.00, 1350000.00),
 (30, 'Universal Supply', '+998911110030', 'Farg‘ona', 'Turli xil mahsulotlar', 'Shanba', 100000.00, '2026-03-05', NULL, 1, '2026-03-13 05:21:32', '2026-03-13 05:21:32', NULL, 7, 'Haftalik', '2026-03-10', 3000000.00, 2900000.00);
 
 -- --------------------------------------------------------
@@ -751,6 +809,16 @@ ALTER TABLE `ombor_jurnali`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `qaytarishlar`
+--
+ALTER TABLE `qaytarishlar`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_qaytarishlar_savdo` (`savdo_id`),
+  ADD KEY `idx_qaytarishlar_mahsulot` (`mahsulot_id`),
+  ADD KEY `idx_qaytarishlar_foydalanuvchi` (`foydalanuvchi_id`),
+  ADD KEY `idx_qaytarishlar_vaqt` (`qaytarilgan_vaqt`);
+
+--
 -- Индексы таблицы `rollar`
 --
 ALTER TABLE `rollar`
@@ -830,7 +898,7 @@ ALTER TABLE `kassa_harakatlari`
 -- AUTO_INCREMENT для таблицы `kassa_smenalari`
 --
 ALTER TABLE `kassa_smenalari`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `kategoriyalar`
@@ -842,13 +910,13 @@ ALTER TABLE `kategoriyalar`
 -- AUTO_INCREMENT для таблицы `kirimlar`
 --
 ALTER TABLE `kirimlar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `kirim_tarkibi`
 --
 ALTER TABLE `kirim_tarkibi`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `mahsulotlar`
@@ -872,7 +940,13 @@ ALTER TABLE `nasiya_tolovlar`
 -- AUTO_INCREMENT для таблицы `ombor_jurnali`
 --
 ALTER TABLE `ombor_jurnali`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT для таблицы `qaytarishlar`
+--
+ALTER TABLE `qaytarishlar`
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `rollar`
@@ -884,7 +958,7 @@ ALTER TABLE `rollar`
 -- AUTO_INCREMENT для таблицы `savdolar`
 --
 ALTER TABLE `savdolar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT для таблицы `savdo_slotlari`
@@ -902,7 +976,7 @@ ALTER TABLE `savdo_slot_items`
 -- AUTO_INCREMENT для таблицы `savdo_tarkibi`
 --
 ALTER TABLE `savdo_tarkibi`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT для таблицы `sozlamalar`
@@ -920,7 +994,7 @@ ALTER TABLE `subkategoriyalar`
 -- AUTO_INCREMENT для таблицы `tolovlar`
 --
 ALTER TABLE `tolovlar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT для таблицы `yetkazib_beruvchilar`
@@ -933,6 +1007,18 @@ ALTER TABLE `yetkazib_beruvchilar`
 --
 ALTER TABLE `yetkazib_beruvchi_tolovlari`
   MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Ограничения внешнего ключа сохраненных таблиц
+--
+
+--
+-- Ограничения внешнего ключа таблицы `qaytarishlar`
+--
+ALTER TABLE `qaytarishlar`
+  ADD CONSTRAINT `fk_qaytarishlar_foydalanuvchi` FOREIGN KEY (`foydalanuvchi_id`) REFERENCES `foydalanuvchilar` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_qaytarishlar_mahsulot` FOREIGN KEY (`mahsulot_id`) REFERENCES `mahsulotlar` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_qaytarishlar_savdo` FOREIGN KEY (`savdo_id`) REFERENCES `savdolar` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -59,35 +59,39 @@ class ReportController extends Controller {
     /**
      * Kunlik hisobot sahifasi
      */
-    public function daily() {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect('login');
-        }
-
-        $date = $_GET['date'] ?? date('Y-m-d');
-        $cashierId = $_GET['cashier_id'] ?? null;
-        $dealerId = $_GET['dealer_id'] ?? null;
-
-        $filters = [];
-        if ($cashierId) $filters['cashier_id'] = $cashierId;
-        if ($dealerId) $filters['dealer_id'] = $dealerId;
-
-        $report = $this->reportModel->getDailyReport($date, $filters);
-
-        // Kassirlar ro'yxati
-        $cashiers = $this->getCashiersList();
-
-        // Dillerlar ro'yxati
-        $dealers = $this->getDealersList();
-
-        $this->view('reports/daily', [
-            'report' => $report,
-            'date' => $date,
-            'filters' => $filters,
-            'cashiers' => $cashiers,
-            'dealers' => $dealers
-        ]);
+   /**
+ * Kunlik hisobot sahifasi
+ */
+public function daily() {
+    if (!isset($_SESSION['user_id'])) {
+        $this->redirect('login');
     }
+
+    $date = $_GET['date'] ?? date('Y-m-d');
+    $cashierId = $_GET['cashier_id'] ?? null;
+    $dealerId = $_GET['dealer_id'] ?? null;
+
+    $filters = [];
+    if ($cashierId) $filters['cashier_id'] = $cashierId;
+    if ($dealerId) $filters['dealer_id'] = $dealerId;
+
+    // Bir kunlik hisobotni olish – getWeeklyReport() bir xil boshlanish va tugash sanasi bilan
+    $report = $this->reportModel->getWeeklyReport($date, $date, $filters);
+
+    // Kassirlar ro'yxati
+    $cashiers = $this->getCashiersList();
+
+    // Dillerlar ro'yxati
+    $dealers = $this->getDealersList();
+
+    $this->view('reports/daily', [
+        'report' => $report,
+        'date' => $date,
+        'filters' => $filters,
+        'cashiers' => $cashiers,
+        'dealers' => $dealers
+    ]);
+}
 
     /**
      * Haftalik hisobot sahifasi

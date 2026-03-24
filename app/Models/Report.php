@@ -5,13 +5,12 @@ namespace App\Models;
 
 class Report extends Model {
     protected $table = 'savdolar';
-    
-    /**
-     * Kunlik savdolar ro'yxati
-     */
+
+    // ==================== ASOSIY METODLAR ====================
+
     public function getDailySales($date = null) {
         $date = $date ?: date('Y-m-d');
-        
+
         $stmt = $this->db->prepare("
             SELECT 
                 s.id,
@@ -32,10 +31,7 @@ class Report extends Model {
         $stmt->execute([$date]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Yillik savdo hisoboti
-     */
+
     public function getYearlyReport($year) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -52,14 +48,9 @@ class Report extends Model {
         $stmt->execute([$year]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Top mahsulotlar hisoboti - TUZATILGAN
-     */
+
     public function getTopProducts($startDate, $endDate, $limit = 10) {
-        // LIMIT ni to'g'ridan-to'g'ri so'rovga qo'shamiz
         $limit = intval($limit);
-        
         $sql = "
             SELECT 
                 p.id,
@@ -82,15 +73,11 @@ class Report extends Model {
             ORDER BY jami_soni DESC
             LIMIT {$limit}
         ";
-        
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Kassir hisoboti
-     */
+
     public function getCashierReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -111,10 +98,7 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Foyda hisoboti
-     */
+
     public function getProfitReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -138,106 +122,65 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Qarzdorlar hisoboti
-     */
-    public function getDebtReport() {
-        $stmt = $this->db->prepare("
-            SELECT 
-                m.id,
-                m.fio,
-                m.telefon,
-                COUNT(DISTINCT s.id) as qarzli_savdolar,
-                SUM(IFNULL(s.qarz_summa, 0)) as jami_qarz,
-                MAX(s.sotilgan_vaqt) as oxirgi_savdo,
-                DATEDIFF(NOW(), MAX(s.sotilgan_vaqt)) as kechikkan_kun
-            FROM mijozlar m
-            JOIN savdolar s ON m.id = s.mijoz_id
-            WHERE s.tolov_holati IN ('NASIYA', 'QISMAN') AND s.qarz_summa > 0
-            GROUP BY m.id
-            ORDER BY jami_qarz DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
 
-    /**
-     * Dillerlar / yetkazib beruvchilar hisobot
-     */
-    public function getDealerReport() {
-        $stmt = $this->db->prepare("
-            SELECT 
-                id,
-                nomi,
-                telefon,
-                qarz,
-                jami_olingan,
-                jami_tolangan,
-                oxirgi_olingan_sana,
-                oxirgi_tolov_sana
-            FROM yetkazib_beruvchilar
-            WHERE ochirilgan_vaqt IS NULL
-            ORDER BY qarz DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
+    // ==================== HISOBOTLAR (qaytarishlar bilan) ====================
 
-    /**
-     * Smеna hisobot
-     */
     public function getShiftReport($startDate, $endDate) {
-        $stmt = $this->db->prepare("
-            SELECT 
-                k.*,
-                u.fio as kassir_fio,
-                (SELECT IFNULL(SUM(tolangan_summa), 0) FROM savdolar WHERE kassir_id = k.kassir_id AND DATE(sotilgan_vaqt) BETWEEN ? AND ? AND holat = 'YAKUNLANGAN' AND tolov_usuli = 'NAQD') as jami_naqd_tolov,
-                (SELECT IFNULL(SUM(summa), 0) FROM qaytarishlar q JOIN savdolar s ON q.savdo_id = s.id WHERE s.kassir_id = k.kassir_id AND DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ?) as qaytarilgan_summa,
-                (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE kiritgan_id = k.kassir_id AND DATE(sana) BETWEEN ? AND ?) as diller_tolovlari
-            FROM kassa_smenalari k
-            LEFT JOIN foydalanuvchilar u ON u.id = k.kassir_id
-            WHERE DATE(k.ochilgan_vaqt) BETWEEN ? AND ?
-            ORDER BY k.ochilgan_vaqt DESC
-        ");
-        $stmt->execute([$startDate, $endDate, $startDate, $endDate, $startDate, $endDate, $startDate, $endDate]);
-        $results = $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    k.*,
+                    u.fio as kassir_fio,
+                    (SELECT IFNULL(SUM(tolangan_summa), 0) FROM savdolar WHERE kassir_id = k.kassir_id AND DATE(sotilgan_vaqt) BETWEEN ? AND ? AND holat = 'YAKUNLANGAN' AND tolov_usuli = 'NAQD') as jami_naqd_tolov,
+                    (SELECT IFNULL(SUM(q.summa), 0) FROM qaytarishlar q JOIN savdolar s ON q.savdo_id = s.id WHERE s.kassir_id = k.kassir_id AND DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ?) as qaytarilgan_summa,
+                    (SELECT IFNULL(SUM(summa), 0) FROM yetkazib_beruvchi_tolovlari WHERE kiritgan_id = k.kassir_id AND DATE(sana) BETWEEN ? AND ?) as diller_tolovlari
+                FROM kassa_smenalari k
+                LEFT JOIN foydalanuvchilar u ON u.id = k.kassir_id
+                WHERE DATE(k.ochilgan_vaqt) BETWEEN ? AND ?
+                ORDER BY k.ochilgan_vaqt DESC
+            ");
+            $stmt->execute([$startDate, $endDate, $startDate, $endDate, $startDate, $endDate, $startDate, $endDate]);
+            $results = $stmt->fetchAll();
 
-        // Calculate expected cash per shift
-        foreach ($results as &$row) {
-            $row['expected_cash'] = ($row['ochilish_naqd'] ?? 0) + ($row['jami_naqd_tolov'] ?? 0) - ($row['qaytarilgan_summa'] ?? 0) - ($row['diller_tolovlari'] ?? 0);
+            foreach ($results as &$row) {
+                $row['expected_cash'] = ($row['ochilish_naqd'] ?? 0) + ($row['jami_naqd_tolov'] ?? 0) - ($row['qaytarilgan_summa'] ?? 0) - ($row['diller_tolovlari'] ?? 0);
+            }
+            unset($row);
+
+            return $results;
+        } catch (\PDOException $e) {
+            error_log("Report::getShiftReport - DB error (possibly missing qaytarishlar table): " . $e->getMessage());
+            return [];
         }
-        unset($row);
-
-        return $results;
     }
 
-    /**
-     * Qaytarishlar hisobot
-     */
     public function getReturnReport($startDate, $endDate) {
-        $stmt = $this->db->prepare("
-            SELECT 
-                r.*, 
-                s.chek_raqami,
-                u.fio as kassir_fio,
-                m.fio as mijoz_fio,
-                p.nomi as mahsulot_nomi
-            FROM qaytarishlar r
-            LEFT JOIN savdolar s ON s.id = r.savdo_id
-            LEFT JOIN foydalanuvchilar u ON u.id = r.foydalanuvchi_id
-            LEFT JOIN mijozlar m ON m.id = s.mijoz_id
-            LEFT JOIN mahsulotlar p ON p.id = r.mahsulot_id
-            WHERE DATE(r.qaytarilgan_vaqt) BETWEEN ? AND ?
-            ORDER BY r.qaytarilgan_vaqt DESC
-        ");
-        $stmt->execute([$startDate, $endDate]);
-        return $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    r.*, 
+                    s.chek_raqami,
+                    u.fio as kassir_fio,
+                    m.fio as mijoz_fio,
+                    p.nomi as mahsulot_nomi
+                FROM qaytarishlar r
+                LEFT JOIN savdolar s ON s.id = r.savdo_id
+                LEFT JOIN foydalanuvchilar u ON u.id = r.foydalanuvchi_id
+                LEFT JOIN mijozlar m ON m.id = s.mijoz_id
+                LEFT JOIN mahsulotlar p ON p.id = r.mahsulot_id
+                WHERE DATE(r.qaytarilgan_vaqt) BETWEEN ? AND ?
+                ORDER BY r.qaytarilgan_vaqt DESC
+            ");
+            $stmt->execute([$startDate, $endDate]);
+            return $stmt->fetchAll();
+        } catch (\PDOException $e) {
+            error_log("Report::getReturnReport - DB error (possibly missing qaytarishlar table): " . $e->getMessage());
+            return [];
+        }
     }
-    
-    /**
-     * To'lov usullari bo'yicha hisobot
-     */
+
+    // ==================== BOSHQA HISOBOT METODLARI ====================
+
     public function getPaymentMethodReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -252,10 +195,7 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Kategoriyalar bo'yicha hisobot
-     */
+
     public function getCategoryReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -275,10 +215,7 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Soatlik savdo hisoboti (qaysi soatlarda ko'p savdo)
-     */
+
     public function getHourlyReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -293,10 +230,7 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Hafta kunlari bo'yicha hisobot
-     */
+
     public function getWeekdayReport($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -320,10 +254,7 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetchAll();
     }
-    
-    /**
-     * Mijozlar statistikasi
-     */
+
     public function getCustomerStats($startDate, $endDate) {
         $stmt = $this->db->prepare("
             SELECT 
@@ -337,83 +268,48 @@ class Report extends Model {
         $stmt->execute([$startDate, $endDate]);
         return $stmt->fetch();
     }
-    
-    /**
-     * Dashboard uchun asosiy statistikalar
-     */
+
+    // ==================== DASHBOARD STATISTIKA ====================
+
     public function getDashboardStats() {
         $today = date('Y-m-d');
-        $startOfMonth = date('Y-m-01');
-        $endOfMonth = date('Y-m-t');
-        
-        $stats = [];
-        
-        // Bugungi statistika
         $todayStats = $this->getDailyReport($today);
-        $stats['today'] = $todayStats ?: [
-            'savdolar_soni' => 0,
-            'jami_savdo' => 0,
-            'jami_qarz' => 0
+        $todayReturns = $this->getReturnsSummaryForDashboard($today);
+
+        $stats = [
+            'today' => [
+                'savdolar_soni' => $todayStats['savdolar_soni'] ?? 0,
+                'jami_savdo'    => $todayStats['jami_savdo'] ?? 0,
+                'jami_qaytarish'=> $todayReturns['jami_qaytarish'],
+                'net_sales'     => ($todayStats['jami_savdo'] ?? 0) - $todayReturns['jami_qaytarish'],
+                'jami_qarz'     => $todayStats['jami_qarz'] ?? 0,
+            ],
+            // ... qolgan statistikalar
         ];
-        
-        // Oylik statistika
-        $monthlySales = $this->getMonthlyDailyReport(date('Y'), date('m'));
-        $monthlyTotal = 0;
-        $monthlyCount = 0;
-        foreach ($monthlySales as $day) {
-            $monthlyTotal += $day['kunlik_savdo'];
-            $monthlyCount += $day['savdolar_soni'];
-        }
-        $stats['monthly'] = [
-            'jami_savdo' => $monthlyTotal,
-            'savdolar_soni' => $monthlyCount,
-            'ortacha_kunlik' => count($monthlySales) > 0 ? $monthlyTotal / count($monthlySales) : 0
-        ];
-        
-        // Kam qolgan mahsulotlar
-        $productModel = new Product();
-        $stats['lowStock'] = count($productModel->lowStock());
-        
-        // Jami mahsulotlar
-        $stmt = $this->db->query("SELECT COUNT(*) as count FROM mahsulotlar WHERE ochirilgan_vaqt IS NULL");
-        $stats['totalProducts'] = $stmt->fetch()['count'];
-        
-        // Jami mijozlar
-        $stmt = $this->db->query("SELECT COUNT(*) as count FROM mijozlar WHERE ochirilgan_vaqt IS NULL");
-        $stats['totalCustomers'] = $stmt->fetch()['count'];
-        
-        // Qarzdorlar
-        $debtors = $this->getDebtReport();
-        $stats['totalDebt'] = 0;
-        foreach ($debtors as $debtor) {
-            $stats['totalDebt'] += $debtor['jami_qarz'];
-        }
-        $stats['debtorCount'] = count($debtors);
-        
         return $stats;
     }
-    
-    /**
-     * Excel export uchun ma'lumotlarni tayyorlash
-     */
-    public function getExportData($type, $startDate, $endDate) {
-        switch ($type) {
-            case 'sales':
-                return $this->getDailySalesRange($startDate, $endDate);
-            case 'profit':
-                return $this->getProfitReport($startDate, $endDate);
-            case 'products':
-                return $this->getTopProducts($startDate, $endDate, 1000);
-            case 'debt':
-                return $this->getDebtReport();
-            default:
-                return [];
-        }
+
+    public function getDailyReport($date) {
+        $stmt = $this->db->prepare("
+            SELECT 
+                DATE(s.sotilgan_vaqt) as sana,
+                COUNT(DISTINCT s.id) as savdolar_soni,
+                COUNT(DISTINCT s.kassir_id) as kassirlar_soni,
+                COUNT(DISTINCT s.mijoz_id) as mijozlar_soni,
+                SUM(s.umumiy_summa) as jami_savdo,
+                SUM(s.chegirma_summa) as jami_chegirma,
+                SUM(s.yakuniy_summa) as sof_tushum,
+                SUM(s.tolangan_summa) as jami_tolov,
+                SUM(s.qarz_summa) as jami_qarz,
+                AVG(s.yakuniy_summa) as ortacha_chek
+            FROM savdolar s
+            WHERE DATE(s.sotilgan_vaqt) = ? AND s.holat = 'YAKUNLANGAN'
+            GROUP BY DATE(s.sotilgan_vaqt)
+        ");
+        $stmt->execute([$date]);
+        return $stmt->fetch();
     }
-    
-    /**
-     * Sana oralig'idagi kunlik savdolar
-     */
+
     public function getDailySalesRange($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
@@ -441,54 +337,33 @@ class Report extends Model {
         return $stmt->fetchAll();
     }
 
-    /**
-     * Kunlik hisobot - to'liq ma'lumotlar
-     */
-    public function getDailyReport($date, $filters = []) {
-        $date = $date ?: date('Y-m-d');
-
-        // Asosiy savdo ma'lumotlari
-        $salesData = $this->getSalesSummary($date, $date, $filters);
-
-        // Diller to'lovlari
-        $dealerPayments = $this->getDealerPayments($date, $date, $filters);
-
-        // Qarz to'lovlari
-        $debtCollections = $this->getDebtCollections($date, $date, $filters);
-
-        // Qaytarishlar
-        $returns = $this->getReturnsSummary($date, $date, $filters);
-
-        // Kassa ma'lumotlari
-        $cashData = $this->getCashSummary($date, $date, $filters);
-
-        return [
-            'date' => $date,
-            'sales' => $salesData,
-            'dealer_payments' => $dealerPayments,
-            'debt_collections' => $debtCollections,
-            'returns' => $returns,
-            'cash' => $cashData
-        ];
+    public function getDebtReport() {
+        $stmt = $this->db->prepare("
+            SELECT 
+                m.id,
+                m.fio,
+                m.telefon,
+                COUNT(DISTINCT s.id) as qarzli_savdolar,
+                SUM(IFNULL(s.qarz_summa, 0)) as jami_qarz,
+                MAX(s.sotilgan_vaqt) as oxirgi_savdo,
+                DATEDIFF(NOW(), MAX(s.sotilgan_vaqt)) as kechikkan_kun
+            FROM mijozlar m
+            JOIN savdolar s ON m.id = s.mijoz_id
+            WHERE s.tolov_holati IN ('NASIYA', 'QISMAN') AND s.qarz_summa > 0
+            GROUP BY m.id
+            ORDER BY jami_qarz DESC
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
-    /**
-     * Haftalik hisobot
-     */
+    // ==================== KUNLIK, HAFTALIK, OYLIK HISOBOTLAR ====================
+
     public function getWeeklyReport($startDate, $endDate, $filters = []) {
-        // Asosiy savdo ma'lumotlari
         $salesData = $this->getSalesSummary($startDate, $endDate, $filters);
-
-        // Diller to'lovlari
         $dealerPayments = $this->getDealerPayments($startDate, $endDate, $filters);
-
-        // Qarz to'lovlari
         $debtCollections = $this->getDebtCollections($startDate, $endDate, $filters);
-
-        // Qaytarishlar
         $returns = $this->getReturnsSummary($startDate, $endDate, $filters);
-
-        // Kassa ma'lumotlari
         $cashData = $this->getCashSummary($startDate, $endDate, $filters);
 
         return [
@@ -502,26 +377,14 @@ class Report extends Model {
         ];
     }
 
-    /**
-     * Oylik hisobot
-     */
     public function getMonthlyReport($year, $month, $filters = []) {
         $startDate = sprintf('%04d-%02d-01', $year, $month);
         $endDate = date('Y-m-t', strtotime($startDate));
 
-        // Asosiy savdo ma'lumotlari
         $salesData = $this->getSalesSummary($startDate, $endDate, $filters);
-
-        // Diller to'lovlari
         $dealerPayments = $this->getDealerPayments($startDate, $endDate, $filters);
-
-        // Qarz to'lovlari
         $debtCollections = $this->getDebtCollections($startDate, $endDate, $filters);
-
-        // Qaytarishlar
         $returns = $this->getReturnsSummary($startDate, $endDate, $filters);
-
-        // Kassa ma'lumotlari
         $cashData = $this->getCashSummary($startDate, $endDate, $filters);
 
         return [
@@ -537,16 +400,12 @@ class Report extends Model {
         ];
     }
 
-    /**
-     * Kunlik oylik hisobot (kun bo'yicha)
-     */
     public function getMonthlyDailyReport($year, $month, $filters = []) {
         $startDate = sprintf('%04d-%02d-01', $year, $month);
         $endDate = date('Y-m-t', strtotime($startDate));
 
         $rows = $this->getDailySalesRange($startDate, $endDate, $filters);
 
-        // Map keys to match views (kun, kunlik_savdo, etc.)
         return array_map(function($row) {
             return [
                 'kun' => (int) date('j', strtotime($row['sana'])),
@@ -558,14 +417,12 @@ class Report extends Model {
         }, $rows);
     }
 
-    /**
-     * Savdo hisoboti - umumlashtirilgan
-     */
+    // ==================== YORDAMCHI HISOBOT METODLARI ====================
+
     public function getSalesSummary($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
 
-        // Kassir filtri
         if (!empty($filters['cashier_id'])) {
             $whereConditions[] = "s.kassir_id = ?";
             $params[] = $filters['cashier_id'];
@@ -590,20 +447,15 @@ class Report extends Model {
         $stmt->execute($params);
         $result = $stmt->fetch();
 
-        // Null qiymatlarni 0 ga o'zgartirish
         return array_map(function($value) {
             return $value ?? 0;
         }, $result);
     }
 
-    /**
-     * Diller to'lovlari hisoboti
-     */
     public function getDealerPayments($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
 
-        // Diller filtri
         if (!empty($filters['dealer_id'])) {
             $whereConditions[] = "yt.yetkazib_beruvchi_id = ?";
             $params[] = $filters['dealer_id'];
@@ -629,7 +481,6 @@ class Report extends Model {
         $stmt->execute($params);
         $payments = $stmt->fetchAll();
 
-        // Jami hisoblash
         $totalPayments = array_sum(array_column($payments, 'summa'));
 
         return [
@@ -639,14 +490,10 @@ class Report extends Model {
         ];
     }
 
-    /**
-     * Qarz to'lovlari hisoboti
-     */
     public function getDebtCollections($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
 
-        // Mijoz filtri
         if (!empty($filters['customer_id'])) {
             $whereConditions[] = "nt.mijoz_id = ?";
             $params[] = $filters['customer_id'];
@@ -674,7 +521,6 @@ class Report extends Model {
         $stmt->execute($params);
         $collections = $stmt->fetchAll();
 
-        // Jami hisoblash
         $totalCollections = array_sum(array_column($collections, 'summa'));
 
         return [
@@ -684,14 +530,10 @@ class Report extends Model {
         ];
     }
 
-    /**
-     * Qaytarishlar hisoboti
-     */
     public function getReturnsSummary($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
 
-        // Kassir filtri
         if (!empty($filters['cashier_id'])) {
             $whereConditions[] = "q.foydalanuvchi_id = ?";
             $params[] = $filters['cashier_id'];
@@ -699,71 +541,56 @@ class Report extends Model {
 
         $whereClause = !empty($whereConditions) ? " AND " . implode(" AND ", $whereConditions) : "";
 
-        $stmt = $this->db->prepare("
-            SELECT
-                q.qaytarilgan_vaqt,
-                s.chek_raqami as original_receipt,
-                p.nomi as product_name,
-                q.miqdor,
-                q.summa,
-                q.sabab,
-                u.fio as processed_by,
-                m.fio as customer_name
-            FROM qaytarishlar q
-            JOIN savdolar s ON q.savdo_id = s.id
-            JOIN mahsulotlar p ON q.mahsulot_id = p.id
-            LEFT JOIN foydalanuvchilar u ON q.foydalanuvchi_id = u.id
-            LEFT JOIN mijozlar m ON s.mijoz_id = m.id
-            WHERE DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ? {$whereClause}
-            ORDER BY q.qaytarilgan_vaqt DESC
-        ");
-        $stmt->execute($params);
-        $returns = $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    q.qaytarilgan_vaqt,
+                    s.chek_raqami as original_receipt,
+                    p.nomi as product_name,
+                    q.miqdor,
+                    q.summa,
+                    q.sabab,
+                    u.fio as processed_by,
+                    m.fio as customer_name
+                FROM qaytarishlar q
+                JOIN savdolar s ON q.savdo_id = s.id
+                JOIN mahsulotlar p ON q.mahsulot_id = p.id
+                LEFT JOIN foydalanuvchilar u ON q.foydalanuvchi_id = u.id
+                LEFT JOIN mijozlar m ON s.mijoz_id = m.id
+                WHERE DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ? {$whereClause}
+                ORDER BY q.qaytarilgan_vaqt DESC
+            ");
+            $stmt->execute($params);
+            $returns = $stmt->fetchAll();
 
-        // Jami hisoblash
-        $totalReturns = array_sum(array_column($returns, 'summa'));
+            $totalReturns = array_sum(array_column($returns, 'summa'));
 
-        return [
-            'returns' => $returns,
-            'total_returns' => $totalReturns,
-            'return_count' => count($returns)
-        ];
+            return [
+                'returns' => $returns,
+                'total_returns' => $totalReturns,
+                'return_count' => count($returns)
+            ];
+        } catch (\PDOException $e) {
+            error_log("Report::getReturnsSummary - DB error (possibly missing qaytarishlar table): " . $e->getMessage());
+            return [
+                'returns' => [],
+                'total_returns' => 0,
+                'return_count' => 0
+            ];
+        }
     }
 
-    /**
-     * Kassa hisoboti
-     */
     public function getCashSummary($startDate, $endDate, $filters = []) {
-        // Boshlang'ich kassa (oxirgi smena boshlang'ich naqdi)
         $openingCash = $this->getOpeningCash($startDate, $filters);
-
-        // Naqd savdo summasi
         $cashSales = $this->getCashSales($startDate, $endDate, $filters);
-
-        // Qarz to'lovlaridan naqd
         $cashDebtCollections = $this->getCashDebtCollections($startDate, $endDate, $filters);
-
-        // Diller to'lovlari (naqd)
         $cashDealerPayments = $this->getCashDealerPayments($startDate, $endDate, $filters);
-
-        // Qaytarishlar (naqd)
         $cashRefunds = $this->getCashRefunds($startDate, $endDate, $filters);
 
-        // Kutilgan kassa hisoblash
-        $expectedCash = $openingCash +
-                       $cashSales +
-                       $cashDebtCollections -
-                       $cashDealerPayments -
-                       $cashRefunds;
+        $expectedCash = $openingCash + $cashSales + $cashDebtCollections - $cashDealerPayments - $cashRefunds;
 
-        // Haqiqiy kassa (agar mavjud bo'lsa)
         $actualCash = $this->getActualCash($startDate, $endDate, $filters);
-
-        // Kamomad/ortiqcha
-        $difference = null;
-        if ($actualCash !== null) {
-            $difference = $actualCash - $expectedCash;
-        }
+        $difference = ($actualCash !== null) ? $actualCash - $expectedCash : null;
 
         return [
             'opening_cash' => $openingCash,
@@ -779,9 +606,6 @@ class Report extends Model {
         ];
     }
 
-    /**
-     * Boshlang'ich kassa
-     */
     public function getOpeningCash($date, $filters = []) {
         $stmt = $this->db->prepare("
             SELECT COALESCE(ochilish_naqd, 0) as opening_cash
@@ -795,9 +619,6 @@ class Report extends Model {
         return $result ? $result['opening_cash'] : 0;
     }
 
-    /**
-     * Naqd savdo summasi
-     */
     public function getCashSales($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
@@ -825,9 +646,6 @@ class Report extends Model {
         return $result['cash_sales'];
     }
 
-    /**
-     * Qarz to'lovlaridan naqd
-     */
     public function getCashDebtCollections($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
@@ -849,9 +667,6 @@ class Report extends Model {
         return $result['cash_collections'];
     }
 
-    /**
-     * Diller to'lovlari (naqd)
-     */
     public function getCashDealerPayments($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
@@ -873,9 +688,6 @@ class Report extends Model {
         return $result['cash_payments'];
     }
 
-    /**
-     * Qaytarishlar (naqd)
-     */
     public function getCashRefunds($startDate, $endDate, $filters = []) {
         $whereConditions = [];
         $params = [$startDate, $endDate];
@@ -887,24 +699,24 @@ class Report extends Model {
 
         $whereClause = !empty($whereConditions) ? " AND " . implode(" AND ", $whereConditions) : "";
 
-        $stmt = $this->db->prepare("
-            SELECT COALESCE(SUM(q.summa), 0) as cash_refunds
-            FROM qaytarishlar q
-            WHERE DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ? {$whereClause}
-        ");
-        $stmt->execute($params);
-        $result = $stmt->fetch();
-        return $result['cash_refunds'];
+        try {
+            $stmt = $this->db->prepare("
+                SELECT COALESCE(SUM(q.summa), 0) as cash_refunds
+                FROM qaytarishlar q
+                WHERE DATE(q.qaytarilgan_vaqt) BETWEEN ? AND ? {$whereClause}
+            ");
+            $stmt->execute($params);
+            $result = $stmt->fetch();
+            return $result['cash_refunds'];
+        } catch (\PDOException $e) {
+            error_log("Report::getCashRefunds - DB error (possibly missing qaytarishlar table): " . $e->getMessage());
+            return 0;
+        }
     }
 
-    /**
-     * Haqiqiy kassa (actual cash)
-     */
     public function getActualCash($startDate, $endDate, $filters = []) {
-        // Ensure the schema has the expected column.
         if (!$this->columnExists('kassa_smenalari', 'actual_cash')) {
             $this->createActualCashColumn();
-            // If creation fails or column still missing, return null so report continues.
             if (!$this->columnExists('kassa_smenalari', 'actual_cash')) {
                 return null;
             }
@@ -922,9 +734,6 @@ class Report extends Model {
         return $result ? $result['actual_cash'] : null;
     }
 
-    /**
-     * Check whether a column exists on a given table.
-     */
     private function columnExists($table, $column) {
         $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?");
         $stmt->execute([$table, $column]);
@@ -932,75 +741,60 @@ class Report extends Model {
         return !empty($result) && intval($result['cnt']) > 0;
     }
 
-    /**
-     * Attempt to create the actual_cash column if it is missing.
-     */
     private function createActualCashColumn() {
         try {
             $this->db->exec("ALTER TABLE kassa_smenalari ADD COLUMN IF NOT EXISTS actual_cash DECIMAL(12,2) NULL DEFAULT NULL AFTER yopilish_naqd;");
         } catch (\PDOException $e) {
-            // Ignore failures - some MySQL versions do not support IF NOT EXISTS in ALTER.
             try {
                 $this->db->exec("ALTER TABLE kassa_smenalari ADD COLUMN actual_cash DECIMAL(12,2) NULL DEFAULT NULL AFTER yopilish_naqd;");
-            } catch (\PDOException $e) {
-                // Quietly ignore; report will continue without actual cash
+            } catch (\PDOException $e2) {
+                // ignore
             }
         }
     }
 
-    /**
-     * Excel export uchun ma'lumotlarni tayyorlash
-     */
+    // ==================== EKSPORT UCHUN ====================
+
     public function getReportRowsForExcel($type, $startDate, $endDate, $filters = []) {
+        $rows = [];
+
         switch ($type) {
             case 'daily':
-                return $this->getDailyReportRows($startDate, $filters);
+                $report = $this->getWeeklyReport($startDate, $endDate, $filters);
+                break;
             case 'weekly':
-                return $this->getWeeklyReportRows($startDate, $endDate, $filters);
+                $report = $this->getWeeklyReport($startDate, $endDate, $filters);
+                break;
             case 'monthly':
-                return $this->getMonthlyReportRows($startDate, $endDate, $filters);
+                $report = $this->getMonthlyReport(date('Y', strtotime($startDate)), date('m', strtotime($startDate)), $filters);
+                break;
             default:
                 return [];
         }
-    }
 
-    /**
-     * PDF export uchun ma'lumotlarni tayyorlash
-     */
-    public function getReportRowsForPdf($type, $startDate, $endDate, $filters = []) {
-        return $this->getReportRowsForExcel($type, $startDate, $endDate, $filters);
-    }
-
-    /**
-     * Kunlik hisobot qatorlari
-     */
-    private function getDailyReportRows($date, $filters = []) {
-        $report = $this->getDailyReport($date, $filters);
-
-        $rows = [];
-
-        // Summary
-        $rows[] = ['SUMMARY', '', '', ''];
-        $rows[] = ['Gross Sales', $report['sales']['gross_sales'], '', ''];
-        $rows[] = ['Returns', $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Net Sales', $report['sales']['gross_sales'] - $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Cash Sales', $report['sales']['cash_sales'], '', ''];
-        $rows[] = ['Card Sales', $report['sales']['card_sales'], '', ''];
-        $rows[] = ['Debt Collections', $report['debt_collections']['total_collections'], '', ''];
-        $rows[] = ['Dealer Payments', $report['dealer_payments']['total_payments'], '', ''];
-        $rows[] = ['Opening Cash', $report['cash']['opening_cash'], '', ''];
-        $rows[] = ['Expected Cash', $report['cash']['expected_cash'], '', ''];
-        if ($report['cash']['actual_cash'] !== null) {
+        // Sarlavha
+        $rows[] = ['HISOBOT', '', '', ''];
+        $rows[] = ['Davr', $startDate . ' - ' . $endDate, '', ''];
+        $rows[] = ['', '', '', ''];
+        $rows[] = ['UMUMIY KO‘RSATKICHLAR', '', '', ''];
+        $rows[] = ['Gross Sales', $report['sales']['gross_sales'] ?? 0, '', ''];
+        $rows[] = ['Returns', $report['returns']['total_returns'] ?? 0, '', ''];
+        $rows[] = ['Net Sales', ($report['sales']['gross_sales'] ?? 0) - ($report['returns']['total_returns'] ?? 0), '', ''];
+        $rows[] = ['Cash Sales', $report['sales']['cash_sales'] ?? 0, '', ''];
+        $rows[] = ['Card Sales', $report['sales']['card_sales'] ?? 0, '', ''];
+        $rows[] = ['Debt Collections', $report['debt_collections']['total_collections'] ?? 0, '', ''];
+        $rows[] = ['Dealer Payments', $report['dealer_payments']['total_payments'] ?? 0, '', ''];
+        $rows[] = ['Opening Cash', $report['cash']['opening_cash'] ?? 0, '', ''];
+        $rows[] = ['Expected Cash', $report['cash']['expected_cash'] ?? 0, '', ''];
+        if (isset($report['cash']['actual_cash']) && $report['cash']['actual_cash'] !== null) {
             $rows[] = ['Actual Cash', $report['cash']['actual_cash'], '', ''];
             $rows[] = ['Difference', $report['cash']['difference'], '', ''];
         }
 
         $rows[] = ['', '', '', ''];
-
-        // Sales details
-        $rows[] = ['SALES DETAILS', '', '', ''];
-        $rows[] = ['Date', 'Receipt', 'Cashier', 'Amount'];
-        foreach ($this->getDailySales($date) as $sale) {
+        $rows[] = ['SAVDOLAR TAFSILOTLARI', '', '', ''];
+        $rows[] = ['Sana', 'Chek raqami', 'Kassir', 'Summa'];
+        foreach ($this->getDailySales($startDate) as $sale) {
             $rows[] = [
                 $sale['sotilgan_vaqt'],
                 $sale['chek_raqami'],
@@ -1010,10 +804,8 @@ class Report extends Model {
         }
 
         $rows[] = ['', '', '', ''];
-
-        // Dealer payments
-        $rows[] = ['DEALER PAYMENTS', '', '', ''];
-        $rows[] = ['Dealer', 'Date', 'Amount', 'Method'];
+        $rows[] = ['DILLER TO‘LOVLARI', '', '', ''];
+        $rows[] = ['Diller', 'Sana', 'Summa', 'Usul'];
         foreach ($report['dealer_payments']['payments'] as $payment) {
             $rows[] = [
                 $payment['dealer_name'],
@@ -1024,10 +816,8 @@ class Report extends Model {
         }
 
         $rows[] = ['', '', '', ''];
-
-        // Debt collections
-        $rows[] = ['DEBT COLLECTIONS', '', '', ''];
-        $rows[] = ['Customer', 'Date', 'Amount', 'Method'];
+        $rows[] = ['QARZ TO‘LOVLARI', '', '', ''];
+        $rows[] = ['Mijoz', 'Sana', 'Summa', 'Usul'];
         foreach ($report['debt_collections']['collections'] as $collection) {
             $rows[] = [
                 $collection['customer_name'],
@@ -1037,51 +827,20 @@ class Report extends Model {
             ];
         }
 
-        return $rows;
-    }
-
-    /**
-     * Haftalik hisobot qatorlari
-     */
-    private function getWeeklyReportRows($startDate, $endDate, $filters = []) {
-        $report = $this->getWeeklyReport($startDate, $endDate, $filters);
-
-        $rows = [];
-
-        // Summary
-        $rows[] = ['WEEKLY SUMMARY', '', '', ''];
-        $rows[] = ['Period', $startDate . ' - ' . $endDate, '', ''];
-        $rows[] = ['Gross Sales', $report['sales']['gross_sales'], '', ''];
-        $rows[] = ['Returns', $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Net Sales', $report['sales']['gross_sales'] - $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Cash Sales', $report['sales']['cash_sales'], '', ''];
-        $rows[] = ['Card Sales', $report['sales']['card_sales'], '', ''];
-        $rows[] = ['Debt Collections', $report['debt_collections']['total_collections'], '', ''];
-        $rows[] = ['Dealer Payments', $report['dealer_payments']['total_payments'], '', ''];
-        $rows[] = ['Expected Cash', $report['cash']['expected_cash'], '', ''];
-
-        return $rows;
-    }
-
-    /**
-     * Oylik hisobot qatorlari
-     */
-    private function getMonthlyReportRows($startDate, $endDate, $filters = []) {
-        $report = $this->getWeeklyReport($startDate, $endDate, $filters); // Reusing weekly logic
-
-        $rows = [];
-
-        // Summary
-        $rows[] = ['MONTHLY SUMMARY', '', '', ''];
-        $rows[] = ['Period', $startDate . ' - ' . $endDate, '', ''];
-        $rows[] = ['Gross Sales', $report['sales']['gross_sales'], '', ''];
-        $rows[] = ['Returns', $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Net Sales', $report['sales']['gross_sales'] - $report['returns']['total_returns'], '', ''];
-        $rows[] = ['Cash Sales', $report['sales']['cash_sales'], '', ''];
-        $rows[] = ['Card Sales', $report['sales']['card_sales'], '', ''];
-        $rows[] = ['Debt Collections', $report['debt_collections']['total_collections'], '', ''];
-        $rows[] = ['Dealer Payments', $report['dealer_payments']['total_payments'], '', ''];
-        $rows[] = ['Expected Cash', $report['cash']['expected_cash'], '', ''];
+        // Qaytarishlar – agar jadval mavjud bo‘lsa
+        if (!empty($report['returns']['returns'])) {
+            $rows[] = ['', '', '', ''];
+            $rows[] = ['QAYTARISHLAR', '', '', ''];
+            $rows[] = ['Mahsulot', 'Miqdor', 'Summa', 'Sabab'];
+            foreach ($report['returns']['returns'] as $return) {
+                $rows[] = [
+                    $return['product_name'],
+                    $return['miqdor'],
+                    $return['summa'],
+                    $return['sabab']
+                ];
+            }
+        }
 
         return $rows;
     }

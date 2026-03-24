@@ -400,8 +400,7 @@
         border: 1px solid #ddd;
     }
 }
-        padding: 15px;
-    }
+    
     
     .table-card {
         padding: 15px;
@@ -446,7 +445,7 @@
         font-size: 11px;
         padding: 15px;
     }
-}
+
 
 /* Small Mobile (up to 400px) */
 @media (max-width: 400px) {
