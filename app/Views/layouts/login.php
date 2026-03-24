@@ -64,8 +64,9 @@
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="login-header">
+    <div class="viewport-1920">
+        <div class="login-card">
+            <div class="login-header">
             <h2>POS Magazin</h2>
             <p>Hisobingizga kiring</p>
         </div>
@@ -114,6 +115,7 @@
         </form>
         
     
+        </div>
     </div>
     
     <?php 

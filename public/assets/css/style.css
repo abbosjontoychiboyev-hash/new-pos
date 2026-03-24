@@ -798,6 +798,104 @@ body {
     font-size: 14px;
 }
 
+/* Dashboard — focused fixes (responsive and visual tweaks) */
+/* Keep selectors specific to dashboard classes only — no HTML changes */
+
+/* Improve visibility of stat icons and ensure values wrap properly */
+.stat-icon {
+    color: rgba(0,0,0,0.07);
+    right: 18px;
+    top: 18px;
+}
+.stat-value {
+    word-break: break-word;
+}
+
+/* Make stats grid responsive and prevent overflow */
+.stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Charts should adapt and canvases fill their containers */
+.chart-card { display: flex; flex-direction: column; }
+.chart-card > div[style] { flex: 1; }
+.chart-card canvas { width: 100% !important; height: 100% !important; }
+
+/* Tables and cards stack on smaller screens */
+.tables-row {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.table-card { overflow: visible; }
+.table-responsive { max-height: 420px; overflow: auto; }
+
+/* Alert lowstock should wrap on narrow screens */
+.alert-lowstock { flex-wrap: wrap; gap: 10px; }
+.alert-lowstock .alert-link { margin-left: 0; }
+
+/* Dashboard stat card refinements */
+.stats-grid .stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+    padding: 18px 18px 18px 20px;
+}
+
+.stats-grid .stat-title {
+    font-size: 12px;
+    color: #6c6f73;
+    margin-bottom: 8px;
+}
+
+.stats-grid .stat-value {
+    font-size: 24px;
+    color: #222;
+    margin-bottom: 6px;
+    line-height: 1.1;
+}
+
+.stats-grid .stat-desc {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.stats-grid .stat-desc i { font-size: 14px; color: #6c757d; }
+
+/* Place the decorative icon to the right but keep it subtle */
+.stats-grid .stat-icon {
+    right: 14px;
+    top: 14px;
+    font-size: 44px;
+    color: rgba(0,0,0,0.04);
+}
+
+/* Small-screen adjustments to avoid stacked, list-like layout */
+@media (max-width: 900px) {
+    .stats-grid .stat-card { min-height: 110px; padding: 14px; }
+    .stats-grid { gap: 12px; }
+}
+
+
+/* Tweak table header sizes for readability on small screens */
+@media (max-width: 768px) {
+    .page-title h4 { font-size: 18px; }
+    .table th, .table td { padding: 10px; font-size: 13px; }
+    .stat-value { font-size: 22px; }
+    .stat-icon { font-size: 42px; }
+}
+
+@media (max-width: 480px) {
+    .sidebar { width: 220px; }
+    .main-content { margin-left: 220px; padding: 12px; }
+    .product-card { flex: 0 0 calc(50% - 8px); }
+    .chart-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+
 .receipt-item-name {
     flex: 1;
 }
@@ -920,4 +1018,29 @@ body {
     .modal-header .btn-close {
         filter: brightness(0) invert(1);
     }
+}
+
+/* Fixed 1920x1080 viewport container - high specificity so it overrides responsive rules inside this container */
+.viewport-1920 {
+    width: 1920px;
+    height: 1080px;
+    margin: 0 auto;
+    overflow: auto;
+    background: #f4f6f9;
+    position: relative;
+}
+.viewport-1920 .wrapper { height: 100%; }
+.viewport-1920 .sidebar { min-height: 1080px; }
+.viewport-1920 .main-content { margin-left: 260px; min-height: 1080px; height: 1080px; overflow: auto; }
+.viewport-1920 .pos-container { height: calc(1080px - 200px); }
+.viewport-1920 .products-section, .viewport-1920 .cart-section { height: calc(1080px - 220px); overflow: auto; }
+.viewport-1920 .auth-wrapper, .viewport-1920 .login-card { display: flex; align-items: center; justify-content: center; height: 100%; }
+
+/* Ensure product cards and grids remain usable inside fixed viewport */
+.viewport-1920 .products-grid { gap: 12px; }
+.viewport-1920 .product-card { transition: transform 0.15s; }
+
+/* Small override: make sure mobile media queries don't collapse the fixed container when actually viewed on large displays */
+@media (min-width: 1920px) {
+    .viewport-1920 { margin-left: auto; margin-right: auto; }
 }

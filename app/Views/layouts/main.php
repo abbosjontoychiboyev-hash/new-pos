@@ -171,7 +171,8 @@
     </style>
 </head>
 <body>
-    <div class="wrapper">
+    <div class="viewport-1920">
+        <div class="wrapper">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -347,6 +348,7 @@
             <div class="footer">
                 <p>© <?= date('Y') ?> POS Magazin. Barcha huquqlar himoyalangan.</p>
             </div>
+        </div>
         </div>
     </div>
     

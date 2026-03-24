@@ -20,9 +20,11 @@
     <?php endif; ?>
 </head>
 <body>
-    <!-- Page Content (faqat login formasi) -->
-    <div class="auth-wrapper">
-        <?= $content ?? '' ?>
+    <div class="viewport-1920">
+        <!-- Page Content (faqat login formasi) -->
+        <div class="auth-wrapper">
+            <?= $content ?? '' ?>
+        </div>
     </div>
     
     <!-- Bootstrap JS -->

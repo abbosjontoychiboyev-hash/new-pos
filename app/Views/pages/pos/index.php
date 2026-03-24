@@ -518,7 +518,7 @@
                                     <span class="cart-product-sku"><?= $item['barcode'] ?></span>
                                 </td>
                                 <td>
-                                    <input type="number" class="cart-qty-input" value="<?= $item['quantity'] ?>" min="1" max="<?= $item['stock'] ?>" step="any" onchange="updateCartItem(<?= $item['id'] ?>, this.value)">
+                                    <input type="number" class="cart-qty-input" value="<?= $item['quantity'] ?>" min="0.5" max="<?= $item['stock'] ?>" step="any" onchange="updateCartItem(<?= $item['id'] ?>, this.value)">
                                 </td>
                                 <td class="cart-price"><?= number_format($item['price'], 0, ',', ' ') ?> so'm</td>
                                 <td class="cart-price"><?= number_format($item['total'], 0, ',', ' ') ?> so'm</td>
