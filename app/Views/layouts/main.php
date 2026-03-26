@@ -43,8 +43,14 @@
             overflow-y: auto;
             z-index: 100;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(0);
+            transition: transform 0.3s ease;
         }
-        
+
+        /* Yashirilgan holat */
+        .sidebar.hide {
+            transform: translateX(-100%);
+        }
         .sidebar-header { 
             padding: 25px 20px; 
             text-align: center; 
@@ -98,9 +104,13 @@
             width: calc(100% - 260px);  /* Qo'shimcha - to'liq enni hisoblash */
             min-height: 100vh;
             background: #f4f6f9;
+            transition: all 0.3s ease;
         }
         
-        
+        .main-content.full {
+            margin-left: 0;
+            width: 100%;
+        }
 
         /* Top Bar - ORIGINAL */
         .top-bar {
@@ -300,6 +310,9 @@
         </script>
             <!-- Top Bar -->
             <div class="top-bar">
+                <button class="btn btn-light" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="page-title">
                     <h4><?= $title ?? 'Dashboard' ?></h4>
                 </div>
@@ -372,6 +385,15 @@
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const main = document.querySelector('.main-content');
+
+            sidebar.classList.toggle('hide');
+            main.classList.toggle('full');
+        }
+
     </script>
 </body>
 </html>
