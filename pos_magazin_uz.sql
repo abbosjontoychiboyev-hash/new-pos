@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1
--- Время создания: Мар 24 2026 г., 12:07
+-- Время создания: Мар 26 2026 г., 08:29
 -- Версия сервера: 10.4.32-MariaDB
 -- Версия PHP: 8.2.12
 
@@ -48,7 +48,7 @@ CREATE TABLE `foydalanuvchilar` (
 
 INSERT INTO `foydalanuvchilar` (`id`, `rol_id`, `fio`, `email`, `telefon`, `login`, `parol_hash`, `faol`, `oxirgi_kirish_vaqt`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`) VALUES
 (2, 2, 'To\'ychiboyev Najmiddin Shukurjon o\'g\'li', 'kassa@example.com', '+998200045578', 'Kassir', '$2y$10$rEwpJt5aWDJ4VR1OlYlNS.loDOXpLG.ootZIvCDkwzmzKKaNM58lW', 1, '2026-03-19 07:24:23', '2026-03-06 11:07:15', '2026-03-19 07:24:23', NULL),
-(3, 1, 'Abbosjon To\'ychiboyev', 'admin@example.com', '+998930008827', 'admin', '$2y$10$cwwtGPH3nRv/1Gg3p8R9I.Q.VWGxqRBoIFr1VDZfnYSSQMWfQjX5S', 1, '2026-03-24 10:45:18', '2026-03-10 05:08:31', '2026-03-24 10:45:18', NULL),
+(3, 1, 'Abbosjon To\'ychiboyev', 'admin@example.com', '+998930008827', 'admin', '$2y$10$cwwtGPH3nRv/1Gg3p8R9I.Q.VWGxqRBoIFr1VDZfnYSSQMWfQjX5S', 1, '2026-03-26 04:58:37', '2026-03-10 05:08:31', '2026-03-26 04:58:37', NULL),
 (4, 3, 'Omborchi', 'ombor@example.com', '+998200007989', 'Omborchi', '$2y$10$zM2V5n.tsRRy4v4By6iT6ekjdIArb1TzvaQCTW/Z3Dr2Tz1oHXCJ2', 1, '2026-03-13 03:21:34', '2026-03-13 03:19:14', '2026-03-13 03:21:34', NULL);
 
 -- --------------------------------------------------------
@@ -92,7 +92,9 @@ CREATE TABLE `kassa_smenalari` (
 --
 
 INSERT INTO `kassa_smenalari` (`id`, `kassir_id`, `ochilgan_vaqt`, `yopilgan_vaqt`, `ochilish_naqd`, `yopilish_naqd`, `actual_cash`, `holat`, `izoh`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
-(1, 3, '2026-03-24 16:06:14', NULL, 250000.00, NULL, NULL, 'OCHIQ', NULL, '2026-03-24 11:06:14', '2026-03-24 11:06:14');
+(1, 3, '2026-03-24 16:06:14', '2026-03-25 09:20:52', 250000.00, 25057.00, NULL, 'YOPIQ', NULL, '2026-03-24 11:06:14', '2026-03-25 04:20:52'),
+(2, 3, '2026-03-25 09:52:40', '2026-03-26 10:24:01', 150.00, 25000.00, NULL, 'YOPIQ', NULL, '2026-03-25 04:52:40', '2026-03-26 05:24:01'),
+(3, 3, '2026-03-26 10:25:03', NULL, 286000.00, NULL, NULL, 'OCHIQ', NULL, '2026-03-26 05:25:03', '2026-03-26 05:25:03');
 
 -- --------------------------------------------------------
 
@@ -176,7 +178,7 @@ CREATE TABLE `mahsulotlar` (
   `birlik` varchar(30) NOT NULL DEFAULT 'dona',
   `kelish_narxi` decimal(12,2) NOT NULL DEFAULT 0.00,
   `sotish_narxi` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `miqdor` int(11) NOT NULL DEFAULT 0,
+  `miqdor` float NOT NULL DEFAULT 0,
   `minimal_miqdor` int(11) NOT NULL DEFAULT 0,
   `faol` tinyint(1) NOT NULL DEFAULT 1,
   `yaratilgan_vaqt` timestamp NULL DEFAULT current_timestamp(),
@@ -189,20 +191,20 @@ CREATE TABLE `mahsulotlar` (
 --
 
 INSERT INTO `mahsulotlar` (`id`, `kategoriya_id`, `subkategoriya_id`, `nomi`, `shtrix_kod`, `birlik`, `kelish_narxi`, `sotish_narxi`, `miqdor`, `minimal_miqdor`, `faol`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`) VALUES
-(31, 6, 1, 'Coca-Cola 1.5L', '5449000000996', 'dona', 11500.00, 13500.00, 50, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(32, 6, 1, 'Coca-Cola 0.5L', '5449000001009', 'dona', 5200.00, 6500.00, 100, 20, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(33, 6, NULL, 'Fanta 1.5L', '5449000131805', 'dona', 11500.00, 13999.00, 40, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:06:48', NULL),
-(34, 6, 1, 'Sprite 1.5L', '5449000131836', 'dona', 11500.00, 13500.00, 30, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
+(31, 6, 1, 'Coca-Cola 1.5L', '5449000000996', 'dona', 11500.00, 13500.00, 47, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:17:14', NULL),
+(32, 6, 1, 'Coca-Cola 0.5L', '5449000001009', 'dona', 5200.00, 6500.00, 99, 20, 1, '2026-03-24 11:02:15', '2026-03-24 11:21:55', NULL),
+(33, 6, NULL, 'Fanta 1.5L', '5449000131805', 'dona', 11500.00, 13999.00, 39, 10, 1, '2026-03-24 11:02:15', '2026-03-26 05:23:38', NULL),
+(34, 6, 1, 'Sprite 1.5L', '5449000131836', 'dona', 11500.00, 13500.00, 26, 10, 1, '2026-03-24 11:02:15', '2026-03-26 05:23:38', NULL),
 (35, 6, 1, 'Pepsi 1.5L', '4823063100204', 'dona', 11000.00, 13000.00, 60, 15, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(36, 6, 1, 'Hydrolife 0.5L Gazsiz', '4780005080031', 'dona', 1800.00, 2500.00, 200, 50, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(37, 6, 1, 'Hydrolife 1.5L Gazsiz', '4780005080048', 'dona', 3500.00, 4500.00, 150, 30, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(38, 6, 1, 'Chortoq 0.5L Gazli', '4780045030430', 'dona', 5200.00, 6500.00, 48, 12, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
+(36, 6, 1, 'Hydrolife 0.5L Gazsiz', '4780005080031', 'dona', 1800.00, 2500.00, 199, 50, 1, '2026-03-24 11:02:15', '2026-03-26 05:11:26', NULL),
+(37, 6, 1, 'Hydrolife 1.5L Gazsiz', '4780005080048', 'dona', 3500.00, 4500.00, 148, 30, 1, '2026-03-24 11:02:15', '2026-03-26 05:23:38', NULL),
+(38, 6, 1, 'Chortoq 0.5L Gazli', '4780045030430', 'dona', 5200.00, 6500.00, 47, 12, 1, '2026-03-24 11:02:15', '2026-03-26 05:23:38', NULL),
 (39, 6, 1, 'Flash Up 0.45L j/b', '4601351010373', 'dona', 6200.00, 7500.00, 72, 24, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(40, 6, 1, 'Red Bull 250ml', '90162909', 'dona', 15500.00, 18500.00, 24, 6, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
+(40, 6, 1, 'Red Bull 250ml', '90162909', 'dona', 15500.00, 18500.00, 23, 6, 1, '2026-03-24 11:02:15', '2026-03-26 05:11:26', NULL),
 (41, 6, 2, 'Dinay Olma 1L', '4780060510122', 'dona', 10500.00, 12500.00, 30, 5, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
 (42, 6, 2, 'Bliss Olcha 1L', '4780021030119', 'dona', 11000.00, 13000.00, 25, 5, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
 (43, 7, 1, 'Snickers 50g', '5000159461122', 'dona', 6200.00, 7500.00, 100, 20, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
-(44, 7, 1, 'Twix 50g', '5000159392099', 'dona', 6200.00, 7500.00, 80, 15, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
+(44, 7, 1, 'Twix 50g', '5000159392099', 'dona', 6200.00, 7500.00, 79, 15, 1, '2026-03-24 11:02:15', '2026-03-25 11:03:52', NULL),
 (45, 7, 1, 'Bounty 55g', '5000159404396', 'dona', 6200.00, 7500.00, 60, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
 (46, 7, 1, 'Mars 51g', '5000159418546', 'dona', 6200.00, 7500.00, 50, 10, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
 (47, 7, 1, 'Alpen Gold 85g', '7622210440624', 'dona', 11500.00, 14500.00, 40, 8, 1, '2026-03-24 11:02:15', '2026-03-24 11:02:15', NULL),
@@ -354,6 +356,14 @@ CREATE TABLE `ombor_jurnali` (
   `yaratilgan_vaqt` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Дамп данных таблицы `ombor_jurnali`
+--
+
+INSERT INTO `ombor_jurnali` (`id`, `mahsulot_id`, `amal`, `miqdor_ozgarish`, `eski_miqdor`, `yangi_miqdor`, `manba_turi`, `manba_id`, `foydalanuvchi_id`, `izoh`, `yaratilgan_vaqt`) VALUES
+(1, 97, 'KIRIM', 0, 40, 40, 'QAYTARISH', NULL, 0, 'Qaytarish: Muddati o\'tgan\r\n', '2026-03-24 16:16:10'),
+(2, 33, 'KIRIM', 1, 39, 40, 'QAYTARISH', NULL, 0, 'Qaytarish: sa', '2026-03-24 16:22:22');
+
 -- --------------------------------------------------------
 
 --
@@ -371,6 +381,14 @@ CREATE TABLE `qaytarishlar` (
   `foydalanuvchi_id` int(20) UNSIGNED NOT NULL COMMENT 'Qaytarishni amalga oshirgan kassir ID si',
   `qaytarilgan_vaqt` timestamp NULL DEFAULT current_timestamp() COMMENT 'Qaytarish vaqti'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `qaytarishlar`
+--
+
+INSERT INTO `qaytarishlar` (`id`, `savdo_id`, `savdo_tarkibi_id`, `mahsulot_id`, `miqdor`, `summa`, `sabab`, `foydalanuvchi_id`, `qaytarilgan_vaqt`) VALUES
+(1, 16, 3, 97, 0, 8050.00, 'Muddati o\'tgan\r\n', 3, '2026-03-24 11:16:10'),
+(2, 18, 6, 33, 1, 13999.00, 'sa', 3, '2026-03-24 11:22:22');
 
 -- --------------------------------------------------------
 
@@ -420,6 +438,18 @@ CREATE TABLE `savdolar` (
   `yaratilgan_vaqt` timestamp NULL DEFAULT current_timestamp(),
   `yangilangan_vaqt` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `savdolar`
+--
+
+INSERT INTO `savdolar` (`id`, `chek_raqami`, `kassir_id`, `kassa_smena_id`, `mijoz_id`, `tolov_usuli`, `tolov_holati`, `umumiy_summa`, `chegirma_summa`, `yakuniy_summa`, `tolangan_summa`, `qarz_summa`, `holat`, `sotilgan_vaqt`, `izoh`, `yaratilgan_vaqt`, `yangilangan_vaqt`) VALUES
+(16, 'CHK-20260324-0001-680', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 0.00, 50.00, -50.00, -50.00, 0.00, 'YAKUNLANGAN', '2026-03-24 16:15:19', '', '2026-03-24 11:15:19', '2026-03-24 11:16:10'),
+(17, 'CHK-20260324-0002-714', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 27000.00, 0.00, 27000.00, 27000.00, 0.00, 'YAKUNLANGAN', '2026-03-24 16:17:14', '', '2026-03-24 11:17:14', '2026-03-24 11:17:14'),
+(18, 'CHK-20260324-0003-350', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 0.00, 0.00, 0.00, 0.00, 0.00, 'YAKUNLANGAN', '2026-03-24 16:21:55', '', '2026-03-24 11:21:55', '2026-03-24 11:22:22'),
+(19, 'CHK-20260325-0001-122', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 21000.00, 0.00, 21000.00, 21000.00, 0.00, 'YAKUNLANGAN', '2026-03-25 16:03:52', '', '2026-03-25 11:03:52', '2026-03-25 11:03:52'),
+(20, 'CHK-20260326-0001-132', 3, NULL, NULL, 'KARTA', 'TOLANGAN', 25500.00, 500.00, 25000.00, 30000.00, 0.00, 'YAKUNLANGAN', '2026-03-26 10:11:25', '', '2026-03-26 05:11:25', '2026-03-26 05:11:25'),
+(21, 'CHK-20260326-0002-254', 3, NULL, NULL, 'NAQD', 'TOLANGAN', 38499.00, 499.00, 38000.00, 40000.00, 0.00, 'YAKUNLANGAN', '2026-03-26 10:23:38', '', '2026-03-26 05:23:38', '2026-03-26 05:23:38');
 
 -- --------------------------------------------------------
 
@@ -479,6 +509,26 @@ CREATE TABLE `savdo_tarkibi` (
   `qator_summa` decimal(12,2) NOT NULL DEFAULT 0.00,
   `yaratilgan_vaqt` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `savdo_tarkibi`
+--
+
+INSERT INTO `savdo_tarkibi` (`id`, `savdo_id`, `mahsulot_id`, `soni`, `birlik_narx`, `chegirma`, `qator_summa`, `yaratilgan_vaqt`) VALUES
+(1, 16, 31, 1, 13500.00, 0.00, 13500.00, '2026-03-24 11:15:19'),
+(2, 16, 34, 1, 13500.00, 0.00, 13500.00, '2026-03-24 11:15:19'),
+(4, 17, 31, 2, 13500.00, 0.00, 27000.00, '2026-03-24 11:17:14'),
+(5, 18, 32, 1, 6500.00, 0.00, 6500.00, '2026-03-24 11:21:55'),
+(7, 18, 34, 1, 13500.00, 0.00, 13500.00, '2026-03-24 11:21:55'),
+(8, 19, 44, 1, 7500.00, 0.00, 7500.00, '2026-03-25 11:03:52'),
+(9, 19, 34, 1, 13500.00, 0.00, 13500.00, '2026-03-25 11:03:52'),
+(10, 20, 37, 1, 4500.00, 0.00, 4500.00, '2026-03-26 05:11:26'),
+(11, 20, 36, 1, 2500.00, 0.00, 2500.00, '2026-03-26 05:11:26'),
+(12, 20, 40, 1, 18500.00, 0.00, 18500.00, '2026-03-26 05:11:26'),
+(13, 21, 33, 1, 13999.00, 0.00, 13999.00, '2026-03-26 05:23:38'),
+(14, 21, 34, 1, 13500.00, 0.00, 13500.00, '2026-03-26 05:23:38'),
+(15, 21, 38, 1, 6500.00, 0.00, 6500.00, '2026-03-26 05:23:38'),
+(16, 21, 37, 1, 4500.00, 0.00, 4500.00, '2026-03-26 05:23:38');
 
 -- --------------------------------------------------------
 
@@ -594,6 +644,13 @@ CREATE TABLE `yetkazib_beruvchilar` (
   `jami_olingan` decimal(12,2) DEFAULT 0.00,
   `jami_tolangan` decimal(12,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `yetkazib_beruvchilar`
+--
+
+INSERT INTO `yetkazib_beruvchilar` (`id`, `nomi`, `telefon`, `manzil`, `izoh`, `kelish_kuni`, `qarz`, `oxirgi_olingan_sana`, `eslatma`, `faol`, `yaratilgan_vaqt`, `yangilangan_vaqt`, `ochirilgan_vaqt`, `tolash_muddati`, `tolash_eslatma`, `oxirgi_tolov_sana`, `jami_olingan`, `jami_tolangan`) VALUES
+(1, 'Chimyon qatiqlar', '+(998)91 150-01-04', 'Eco City 68-uy', 'Har ikki kun', 'Monday', 0.00, NULL, NULL, 1, '2026-03-24 11:14:23', '2026-03-24 11:14:23', NULL, 2, '', NULL, 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -768,7 +825,7 @@ ALTER TABLE `kassa_harakatlari`
 -- AUTO_INCREMENT для таблицы `kassa_smenalari`
 --
 ALTER TABLE `kassa_smenalari`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT для таблицы `kategoriyalar`
@@ -810,13 +867,13 @@ ALTER TABLE `nasiya_tolovlar`
 -- AUTO_INCREMENT для таблицы `ombor_jurnali`
 --
 ALTER TABLE `ombor_jurnali`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `qaytarishlar`
 --
 ALTER TABLE `qaytarishlar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `rollar`
@@ -828,7 +885,7 @@ ALTER TABLE `rollar`
 -- AUTO_INCREMENT для таблицы `savdolar`
 --
 ALTER TABLE `savdolar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT для таблицы `savdo_slotlari`
@@ -846,7 +903,7 @@ ALTER TABLE `savdo_slot_items`
 -- AUTO_INCREMENT для таблицы `savdo_tarkibi`
 --
 ALTER TABLE `savdo_tarkibi`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT для таблицы `sozlamalar`
@@ -870,7 +927,7 @@ ALTER TABLE `tolovlar`
 -- AUTO_INCREMENT для таблицы `yetkazib_beruvchilar`
 --
 ALTER TABLE `yetkazib_beruvchilar`
-  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT для таблицы `yetkazib_beruvchi_tolovlari`
